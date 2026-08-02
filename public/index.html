@@ -56,12 +56,29 @@
     applyStrings();
     document.title = STR.landingTitle;
 
+    const presetRow = (p) => `
+      <label class="preset">
+        <input type="checkbox" name="preset" value="${p.key}" checked>
+        <span>${p.emoji} ${p.name}</span>
+      </label>`;
+
     fetch('/api/presets').then((r) => r.json()).then((presets) => {
-      $('preset-list').innerHTML = presets.map((p) => `
-        <label class="preset">
-          <input type="checkbox" name="preset" value="${p.key}" checked>
-          <span>${p.emoji} ${p.name}</span>
-        </label>`).join('');
+      const CATEGORY_LABELS = {
+        geo: STR.catGeo, drawing: STR.catDrawing, deduction: STR.catDeduction,
+        wiki: STR.catWiki, action: STR.catAction, strategy: STR.catStrategy,
+        other: STR.catOther,
+      };
+      const order = Object.keys(CATEGORY_LABELS);
+      const byCat = new Map(order.map((k) => [k, []]));
+      for (const p of presets) (byCat.get(p.category) || byCat.get('other')).push(p);
+
+      $('preset-list').innerHTML = order
+        .filter((k) => byCat.get(k).length)
+        .map((k) => `
+          <div class="preset-cat">
+            <div class="cat-label">${CATEGORY_LABELS[k]}</div>
+            ${byCat.get(k).map(presetRow).join('')}
+          </div>`).join('');
     });
 
     $('add-custom').addEventListener('click', () => {

@@ -109,6 +109,15 @@ label.radio, label.preset {
   color: var(--text);
 }
 label.radio input, label.preset input { width: auto; margin: 0; }
+.preset-cat { margin: 12px 0; }
+.cat-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 2px;
+}
 .custom-row { display: flex; gap: 8px; margin: 8px 0; }
 .custom-row input { margin-top: 0; }
 .custom-row .c-del { padding: 8px 12px; flex-shrink: 0; }
