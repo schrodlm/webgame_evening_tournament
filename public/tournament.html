@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WET — Tournament</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="tournament">
+    <header class="t-header">
+      <div>
+        <a class="logo small" href="/">🏆 WET</a>
+        <h1 id="t-name">…</h1>
+      </div>
+      <button id="copy-invite" class="btn ghost">🔗 Copy invite link</button>
+    </header>
+
+    <section id="join-box" class="card" hidden>
+      <h2>Join this tournament</h2>
+      <form id="join-form">
+        <label>Your nickname
+          <input name="name" maxlength="24" required autofocus>
+        </label>
+        <button type="submit" class="btn primary">Join</button>
+        <p class="error" id="join-error" hidden></p>
+      </form>
+    </section>
+
+    <section id="round-box"></section>
+    <section id="host-box" hidden></section>
+
+    <div class="columns">
+      <section class="card">
+        <h2>🥇 Standings</h2>
+        <ol id="standings" class="standings"></ol>
+      </section>
+      <section class="card">
+        <h2>👥 Players</h2>
+        <ul id="players" class="players"></ul>
+        <h2 class="spaced">📜 Rounds</h2>
+        <ul id="history" class="history"></ul>
+      </section>
+    </div>
+
+    <p id="conn" class="conn" hidden>reconnecting…</p>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
