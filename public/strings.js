@@ -14,8 +14,8 @@ const STR = {
   nicknamePlaceholder: "nickname",
   pickModeLegend: 'How is the next game picked?',
   pickModeChanceOption: "🎰 Chance - spin the carousel, let the gods decide",
-  pickModeHostOption: "🎛 Host picks - you choose every round",
-  pickModeVoteOption: "🗳 Players vote - for the fans of democracy, ties go to chance",
+  pickModeHostOption: "🎛️ Host picks - you choose every round",
+  pickModeVoteOption: "🗳️ Players vote - for the fans of democracy, ties go to chance",
   gamesLegend: 'Games for the night',
   addCustomButton: '＋ Custom game',
   randomPoolButton: '🎲 Random pool',
@@ -41,12 +41,12 @@ const STR = {
 
   // pick-mode badges
   pickModeChance: '🎰 Chance',
-  pickModeHost: '🎛 Host picks',
-  pickModeVote: '🗳 Players vote',
+  pickModeHost: '🎛️ Host picks',
+  pickModeVote: '🗳️ Players vote',
 
   // round card
   roundLiveLabel: 'ROUND {n} · LIVE',
-  joinLobbyButton: '▶ JOIN LOBBY',
+  joinLobbyButton: '▶️ JOIN LOBBY',
   roundLiveHint: 'Everyone clicks, plays, then the host enters the results here.',
   upNextLabel: 'UP NEXT · ROUND {n}',
   upNextHostHint: 'Create the lobby and paste the link below.',
@@ -61,7 +61,7 @@ const STR = {
   roundHeading: 'Round {n}',
   hostPickHostHint: 'Pick the next game - click a tile in the pool below.',
   hostPickPlayerHint: 'The host is picking the next game…',
-  voteLabel: 'ROUND {n} · 🗳 VOTE',
+  voteLabel: 'ROUND {n} · 🗳️ VOTE',
   voteHeading: 'Vote for the next game',
   voteHint: 'Click a game tile in the pool below{changeNote}. <b>{voted}/{total}</b> voted.',
   voteChangeNote: " - you can still change your vote",
@@ -70,7 +70,7 @@ const STR = {
   voteIdlePlayerHint: 'Waiting for the host to open the vote…',
 
   // host controls
-  finishHeading: "🎛 Host - finish round {n}",
+  finishHeading: "🎛️ Host - finish round {n}",
   finishHint: 'Tap players in the order they finished - first tap is 1st place, tap again to remove, = marks a tie with the player before. Untapped players sat out 💤. Points: 1st of {total} gets {total}, last gets 1.',
   submitResultsButton: 'Submit results',
   submittingButton: 'Submitting…',
@@ -80,14 +80,14 @@ const STR = {
   fixLinkToggle: '🔧 Wrong lobby link?',
   fixLinkButton: 'Update link',
   noPlacementsError: 'Enter at least one placement',
-  openLobbyHeading: "🎛 Host - open the {game} lobby",
-  openSiteLink: 'Open {game} ↗',
+  openLobbyHeading: "🎛️ Host - open the {game} lobby",
+  openSiteLink: 'Open {game} ↗️',
   lobbyLinkLabel: 'Lobby link',
   lobbyLinkPlaceholder: 'Paste the lobby / invite URL here',
   startRoundButton: '🚀 Start round - push to all players',
   cancelPickButton: 'Cancel this pick',
   spinButton: '🎰 SPIN',
-  openVoteButton: '🗳 Open the vote',
+  openVoteButton: '🗳️ Open the vote',
   closeVoteButton: 'Close vote now ({voted}/{total} voted)',
   closeVoteHint: 'The vote closes itself once everyone voted. Majority wins, ties go to chance.',
 
