@@ -223,11 +223,13 @@ function renderHost() {
             const i = at.get(p.id);
             const placed = i !== undefined;
             const badge = placed ? (medals[places[i] - 1] || `${places[i]}.`) : '';
-            return `<div class="chip ${placed ? 'placed' : ''}" data-tap="${p.id}">
+            return `<div class="chip ${placed ? 'placed' : ''}" data-tap="${p.id}"
+              role="button" tabindex="0" aria-pressed="${placed}">
               ${placed ? `<span class="chip-place ${p.id === justPlaced ? 'pop' : ''}">${badge}</span>` : ''}
               <span class="chip-name">${esc(p.name)}</span>
               ${placed && i > 0 ? `<button type="button" class="chip-tie ${finishTaps.taps[i].tie ? 'on' : ''}"
-                data-tie="${p.id}" title="${STR.tieToggleTitle}">${STR.tieMark}</button>` : ''}
+                data-tie="${p.id}" title="${STR.tieToggleTitle}" aria-label="${STR.tieToggleTitle}"
+                aria-pressed="${finishTaps.taps[i].tie}">${STR.tieMark}</button>` : ''}
             </div>`;
           }).join('')}
         </div>
@@ -247,23 +249,30 @@ function renderHost() {
       </form>` : ''}
     </div>`;
     $('finish-form').addEventListener('submit', onFinishRound);
+    const toggleTap = (id) => {
+      if (finishSubmitting) return;
+      const i = finishTaps.taps.findIndex((t) => t.playerId === id);
+      if (i >= 0) {
+        const wasHead = !finishTaps.taps[i].tie;
+        finishTaps.taps.splice(i, 1);
+        // Removing a tie-group head: promote the next member so the group
+        // does not silently merge into the one above
+        if (wasHead && finishTaps.taps[i]?.tie) finishTaps.taps[i].tie = false;
+      } else {
+        finishTaps.taps.push({ playerId: id, tie: false });
+        justPlaced = id;
+      }
+      render();
+      justPlaced = null;
+    };
     for (const chip of box.querySelectorAll('[data-tap]')) {
-      chip.addEventListener('click', () => {
-        if (finishSubmitting) return;
-        const id = chip.dataset.tap;
-        const i = finishTaps.taps.findIndex((t) => t.playerId === id);
-        if (i >= 0) {
-          const wasHead = !finishTaps.taps[i].tie;
-          finishTaps.taps.splice(i, 1);
-          // Removing a tie-group head: promote the next member so the group
-          // does not silently merge into the one above
-          if (wasHead && finishTaps.taps[i]?.tie) finishTaps.taps[i].tie = false;
-        } else {
-          finishTaps.taps.push({ playerId: id, tie: false });
-          justPlaced = id;
-        }
-        render();
-        justPlaced = null;
+      chip.addEventListener('click', () => toggleTap(chip.dataset.tap));
+      chip.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault(); // Space must toggle, not scroll
+        toggleTap(chip.dataset.tap);
+        // render() rebuilt the DOM; put focus back on this player's fresh chip
+        document.querySelector(`[data-tap="${chip.dataset.tap}"]`)?.focus();
       });
     }
     for (const btn of box.querySelectorAll('[data-tie]')) {
