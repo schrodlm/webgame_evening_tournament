@@ -459,7 +459,8 @@ function renderPool() {
       (hostPicking || voting) && g.status === 'pending' ? 'clickable' : '',
       myVote === g.id ? 'my-vote' : '',
     ].join(' '),
-    (tallies[g.id] ? `<span class="tile-votes">🗳️ ${tallies[g.id]}</span>` : '')
+    (tallies[g.id] ? `<span class="tile-votes">🗳️ ${tallies[g.id]}${
+      myVote === g.id ? ` · ${STR.youBadge}` : ''}</span>` : '')
     + (removable && g.status === 'pending' && state.pendingPick?.gameId !== g.id
       ? `<button class="tile-del" data-del="${g.id}" title="${STR.removeTileTitle}">✕</button>` : '')
   )).join('') || `<p class="hint">${STR.poolEmpty}</p>`;
