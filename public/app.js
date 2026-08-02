@@ -510,6 +510,7 @@ async function api(path, body, opts = {}) {
 
 function showError(id, err) {
   const el = $(id);
+  if (!el) return alert(err.message); // the form may have re-rendered away mid-request
   el.textContent = err.message;
   el.hidden = false;
 }
