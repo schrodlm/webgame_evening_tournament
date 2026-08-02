@@ -62,6 +62,7 @@ const STR = {
   upNextHostHint: 'Create the lobby and paste the link below.',
   upNextPlayerHint: "The host is creating the lobby - the join button will appear here.",
   allPlayedHeading: '🏁 All games played',
+  championLine: '👑 {name} wins the night with {pts} pts!',
   allPlayedBody: "That is all folks - the standings are final{extra}.",
   allPlayedHostExtra: ' (or add another game to the pool to keep going)',
   chanceLabel: 'ROUND {n} · 🎰 CHANCE',

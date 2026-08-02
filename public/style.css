@@ -145,6 +145,19 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .round.live { border-color: var(--accent-2); box-shadow: 0 0 24px rgba(55, 214, 122, 0.15); }
 .round-label { color: var(--accent-2); font-weight: 700; letter-spacing: 2px; font-size: 0.8rem; }
 .round.idle { text-align: center; color: var(--muted); }
+.round.final {
+  text-align: center;
+  border-color: #e7c34b;
+  box-shadow: 0 0 24px rgba(231, 195, 75, 0.18);
+}
+.champ-line {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #e7c34b;
+  margin: 10px 0;
+  animation: chip-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.standings li.champ { background: rgba(231, 195, 75, 0.12); }
 
 /* ---------- tap-in-order results entry ---------- */
 

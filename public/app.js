@@ -79,8 +79,14 @@ function renderRound() {
 
   const pool = pendingPool();
   if (!pool.length) {
-    box.innerHTML = `<div class="card round idle">
+    const anyFinished = state.rounds.some((r) => r.status === 'finished');
+    const top = state.standings[0];
+    const champs = anyFinished && top
+      ? state.standings.filter((s) => s.total === top.total).map((s) => s.name) : [];
+    box.innerHTML = `<div class="card round ${champs.length ? 'final' : 'idle'}">
       <h2>${STR.allPlayedHeading}</h2>
+      ${champs.length ? `<p class="champ-line">${fmt(STR.championLine, {
+        name: esc(champs.join(' & ')), pts: top.total })}</p>` : ''}
       <p>${fmt(STR.allPlayedBody, { extra: isHost() ? STR.allPlayedHostExtra : '' })}</p>
     </div>`;
     return;
@@ -470,10 +476,12 @@ function renderStandings() {
   // No medals before the first result lands - a fresh tournament is a guest
   // list, not a leaderboard. Ties share a rank (same 1,2,2,4 scheme as results).
   const anyFinished = state.rounds.some((r) => r.status === 'finished');
+  const nightOver = anyFinished && !pendingPool().length && !activeRound() && !state.pendingPick;
   let rank = 0;
   $('standings').innerHTML = state.standings.map((s, i) => {
     if (i === 0 || s.total !== state.standings[i - 1].total) rank = i + 1;
-    return `<li class="${s.playerId === identity?.playerId ? 'me' : ''}">
+    return `<li class="${s.playerId === identity?.playerId ? 'me' : ''} ${
+      nightOver && rank === 1 ? 'champ' : ''}">
       <span class="rank">${anyFinished ? rankBadge(rank) : '·'}</span>
       <span class="name">${esc(s.name)}</span>
       <span class="pts">${fmt(STR.pointsSuffix, { n: s.total })}</span>
