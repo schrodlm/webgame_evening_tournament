@@ -574,17 +574,19 @@ function renderHistory() {
 // ---------- actions ----------
 
 async function api(path, body, opts = {}) {
+  const hasBody = body !== null && body !== undefined;
   const res = await fetch(path, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
       ...(isHost() ? { 'X-Host-Token': identity.hostToken } : {}),
       ...(identity?.playerToken ? { 'X-Player-Token': identity.playerToken } : {}),
     },
-    body: JSON.stringify(body),
+    ...(hasBody ? { body: JSON.stringify(body) } : {}),
     ...opts,
   });
-  const out = await res.json();
+  // Never assume JSON came back - a proxy or error page would crash the caller
+  const out = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(out.error || STR.requestFailedError);
   return out;
 }
