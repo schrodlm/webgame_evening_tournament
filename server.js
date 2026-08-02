@@ -132,6 +132,28 @@ function requireHost(req, res) {
   return t;
 }
 
+function requirePlayer(req, res) {
+  const t = getTournament(req.params.code);
+  if (!t) {
+    res.status(404).json({ error: 'Tournament not found' });
+    return null;
+  }
+  const player = t.players.find((p) => p.token === req.get('X-Player-Token'));
+  if (!player) {
+    res.status(403).json({ error: 'Player token required' });
+    return null;
+  }
+  return { t, player };
+}
+
+// Rejects picking while something else is in flight; returns false after responding.
+function readyToPick(t, res) {
+  if (activeRound(t)) return res.status(409).json({ error: 'Finish the current round first' }), false;
+  if (t.pendingPick) return res.status(409).json({ error: 'A game is already picked as up next' }), false;
+  if (t.pendingVote) return res.status(409).json({ error: 'A vote is already running' }), false;
+  return true;
+}
+
 // ---------- websocket fan-out ----------
 
 const server = http.createServer(app);
@@ -155,12 +177,14 @@ wss.on('connection', (ws, req) => {
   ws.send(JSON.stringify({ type: 'state', state: getState(code) }));
 });
 
-function broadcast(code) {
+function send(code, payload) {
   const room = rooms.get(code);
   if (!room) return;
-  const msg = JSON.stringify({ type: 'state', state: getState(code) });
+  const msg = JSON.stringify(payload);
   for (const ws of room) if (ws.readyState === ws.OPEN) ws.send(msg);
 }
+
+const broadcast = (code) => send(code, { type: 'state', state: getState(code) });
 
 // ---------- API ----------
 
@@ -281,12 +305,123 @@ app.post('/api/tournaments/:code/pick-mode', (req, res) => {
   res.json({ ok: true });
 });
 
+// --- picking the next game ---
+
+app.post('/api/tournaments/:code/pick/spin', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  if (t.pickMode !== 'chance') return res.status(409).json({ error: 'Pick mode is not chance' });
+  if (!readyToPick(t, res)) return;
+  const pool = pendingGames(t);
+  if (!pool.length) return res.status(409).json({ error: 'No games left in the pool' });
+
+  const winner = pool[crypto.randomInt(pool.length)];
+  t.pendingPick = {
+    gameId: winner.id,
+    mode: 'chance',
+    // Seed for the carousel tile sequence: every client renders the same strip
+    // and the same landing animation from it.
+    seed: crypto.randomBytes(4).toString('hex'),
+    pickedAt: now(),
+  };
+  persist();
+  send(t.code, { type: 'spin', spin: t.pendingPick });
+  broadcast(t.code);
+  res.json({ gameId: winner.id });
+});
+
+app.post('/api/tournaments/:code/pick/choose', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  if (t.pickMode !== 'host') return res.status(409).json({ error: 'Pick mode is not host' });
+  if (!readyToPick(t, res)) return;
+  const game = t.games.find((g) => g.id === req.body?.gameId);
+  if (!game) return res.status(404).json({ error: 'Game not found' });
+  if (game.status !== 'pending') return res.status(409).json({ error: 'Game was already played' });
+
+  t.pendingPick = { gameId: game.id, mode: 'host', seed: null, pickedAt: now() };
+  persist();
+  broadcast(t.code);
+  res.json({ gameId: game.id });
+});
+
+app.post('/api/tournaments/:code/pick/cancel', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  if (!t.pendingPick && !t.pendingVote) {
+    return res.status(409).json({ error: 'Nothing to cancel' });
+  }
+  t.pendingPick = null;
+  t.pendingVote = null;
+  persist();
+  broadcast(t.code);
+  res.json({ ok: true });
+});
+
+// --- vote mode ---
+
+function resolveVote(t) {
+  const tally = {};
+  for (const gameId of Object.values(t.pendingVote.votes)) {
+    tally[gameId] = (tally[gameId] || 0) + 1;
+  }
+  const top = Math.max(...Object.values(tally));
+  const leaders = Object.keys(tally).filter((g) => tally[g] === top);
+  // Tie → chance decides between the tied games
+  const gameId = leaders[crypto.randomInt(leaders.length)];
+  t.pendingPick = { gameId, mode: 'vote', seed: null, pickedAt: now() };
+  t.pendingVote = null;
+}
+
+app.post('/api/tournaments/:code/pick/vote/open', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  if (t.pickMode !== 'vote') return res.status(409).json({ error: 'Pick mode is not vote' });
+  if (!readyToPick(t, res)) return;
+  if (!pendingGames(t).length) return res.status(409).json({ error: 'No games left in the pool' });
+
+  t.pendingVote = { votes: {}, openedAt: now() };
+  persist();
+  broadcast(t.code);
+  res.json({ ok: true });
+});
+
+app.post('/api/tournaments/:code/pick/vote', (req, res) => {
+  const found = requirePlayer(req, res);
+  if (!found) return;
+  const { t, player } = found;
+  if (!t.pendingVote) return res.status(409).json({ error: 'No vote is running' });
+  const game = t.games.find((g) => g.id === req.body?.gameId);
+  if (!game || game.status !== 'pending') {
+    return res.status(400).json({ error: 'Vote for a game that is still in the pool' });
+  }
+
+  t.pendingVote.votes[player.id] = game.id;
+  if (Object.keys(t.pendingVote.votes).length === t.players.length) resolveVote(t);
+  persist();
+  broadcast(t.code);
+  res.json({ ok: true });
+});
+
+app.post('/api/tournaments/:code/pick/vote/close', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  if (!t.pendingVote) return res.status(409).json({ error: 'No vote is running' });
+  if (!Object.keys(t.pendingVote.votes).length) {
+    return res.status(409).json({ error: 'Nobody voted yet' });
+  }
+  resolveVote(t);
+  persist();
+  broadcast(t.code);
+  res.json({ ok: true });
+});
+
 app.post('/api/tournaments/:code/rounds', (req, res) => {
   const t = requireHost(req, res);
   if (!t) return;
   const { game, lobbyUrl } = req.body || {};
-  if (!game?.trim() || !lobbyUrl?.trim()) {
-    return res.status(400).json({ error: 'game and lobbyUrl are required' });
+  if (!lobbyUrl?.trim()) {
+    return res.status(400).json({ error: 'lobbyUrl is required' });
   }
   try {
     new URL(lobbyUrl);
@@ -295,10 +430,26 @@ app.post('/api/tournaments/:code/rounds', (req, res) => {
   }
   if (activeRound(t)) return res.status(409).json({ error: 'Finish the current round first' });
 
+  let gameName;
+  let gameId = null;
+  if (t.pendingPick) {
+    const picked = t.games.find((g) => g.id === t.pendingPick.gameId);
+    gameName = picked.name;
+    gameId = picked.id;
+    picked.status = 'played';
+    t.pendingPick = null;
+  } else if (game?.trim()) {
+    // Legacy free-text path, kept until the UI runs fully on the pick flow
+    gameName = game.trim();
+  } else {
+    return res.status(409).json({ error: 'Pick the next game first' });
+  }
+
   const round = {
     id: makeId(),
     number: t.rounds.length + 1,
-    game: game.trim(),
+    game: gameName,
+    gameId,
     lobbyUrl: lobbyUrl.trim(),
     status: 'active',
     startedAt: now(),
