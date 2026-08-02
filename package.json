@@ -1,0 +1,17 @@
+{
+  "name": "webgame_evening_tournament",
+  "version": "1.0.0",
+  "description": "WET — Webgame Evening Tournament. One lobby for your whole game night.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "ws": "^8.21.1"
+  }
+}
