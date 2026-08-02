@@ -52,6 +52,9 @@ const pendingPool = () => state.games.filter((g) => g.status === 'pending');
 const pickedGame = () => state.games.find((g) => g.id === state.pendingPick?.gameId) || null;
 const ordinal = (n) => `${n}${['st', 'nd', 'rd'][n - 1] || 'th'}`;
 
+// Animated ellipsis appended to waiting hints so idle screens read as live
+const WAIT_DOTS = '<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+
 // One-line ribbon acknowledging the last finished round on between-round cards
 function lastRoundRecap() {
   const finished = state.rounds.filter((r) => r.status === 'finished');
@@ -90,7 +93,7 @@ function renderRound() {
       <div class="round-label">${fmt(STR.upNextLabel, { n: state.rounds.length + 1 })}</div>
       ${lastRoundRecap()}
       <div class="upnext-tile">${gameTile(g, 'mini landed')}</div>
-      <p class="hint">${isHost() ? STR.upNextHostHint : STR.upNextPlayerHint}</p>
+      <p class="hint">${isHost() ? STR.upNextHostHint : STR.upNextPlayerHint + WAIT_DOTS}</p>
     </div>`;
     return;
   }
@@ -118,7 +121,7 @@ function renderRound() {
       <div class="carousel"><div class="carousel-marker"></div>
         <div class="carousel-strip">${tiles.map((g) => gameTile(g, 'mini')).join('')}</div>
       </div>
-      <p class="hint">${isHost() ? STR.chanceHostHint : STR.chancePlayerHint}</p>
+      <p class="hint">${isHost() ? STR.chanceHostHint : STR.chancePlayerHint + WAIT_DOTS}</p>
     </div>`;
     return;
   }
@@ -127,7 +130,7 @@ function renderRound() {
     box.innerHTML = `<div class="card round idle">
       <h2>${fmt(STR.roundHeading, { n: state.rounds.length + 1 })}</h2>
       ${lastRoundRecap()}
-      <p>${isHost() ? STR.hostPickHostHint : STR.hostPickPlayerHint}</p>
+      <p>${isHost() ? STR.hostPickHostHint : STR.hostPickPlayerHint + WAIT_DOTS}</p>
     </div>`;
     return;
   }
@@ -163,7 +166,7 @@ function renderRound() {
   box.innerHTML = `<div class="card round idle">
     <h2>${fmt(STR.roundHeading, { n: state.rounds.length + 1 })}</h2>
     ${lastRoundRecap()}
-    <p>${isHost() ? STR.voteIdleHostHint : STR.voteIdlePlayerHint}</p>
+    <p>${isHost() ? STR.voteIdleHostHint : STR.voteIdlePlayerHint + WAIT_DOTS}</p>
   </div>`;
 }
 
