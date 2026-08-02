@@ -5,7 +5,7 @@ const IDENTITY_KEY = 'wet:' + CODE;
 
 const GAMES = [
   { name: 'OpenGuessr', site: 'https://openguessr.com/', hint: 'Create a party and copy the invite link.' },
-  { name: 'Krycí jména', site: 'https://codenames.game/', hint: 'Create room → copy the room URL from the address bar.' },
+  { name: 'Code Names', site: 'https://codenames.game/', hint: 'Create room → copy the room URL from the address bar.' },
   { name: 'WikiSpeedruns', site: 'https://wikispeedruns.com/', hint: 'Create a private lobby and copy the invite link.' },
   { name: 'Dobyvatel', site: 'https://www.dobyvatel.cz/', hint: 'Create a quick game and copy the invite link.' },
   { name: 'Custom…', site: '', hint: 'Any game with a shareable lobby link works.' },

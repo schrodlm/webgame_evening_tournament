@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { WebSocketServer } = require('ws');
 const { data, persist } = require('./store');
+const PRESETS = require('./presets');
 
 const app = express();
 app.use(express.json());
@@ -91,6 +92,8 @@ function broadcast(code) {
 }
 
 // ---------- API ----------
+
+app.get('/api/presets', (_req, res) => res.json(PRESETS));
 
 app.post('/api/tournaments', (req, res) => {
   const { name, hostName } = req.body || {};
