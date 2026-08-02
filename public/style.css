@@ -282,6 +282,9 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .tile.mini { width: 120px; flex-shrink: 0; }
 .tile.landed { box-shadow: 0 0 0 3px var(--accent-2), 0 0 24px rgba(55, 214, 122, 0.4); }
 
+/* Keep the destructive escape hatch well away from the big green button */
+#cancel-pick { margin-top: 16px; padding: 8px 12px; font-size: 0.85rem; }
+
 .btn.spin {
   width: 100%;
   font-size: 1.5rem;
