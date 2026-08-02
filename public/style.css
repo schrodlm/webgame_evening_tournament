@@ -280,7 +280,7 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 }
 .tile-emoji { font-size: 1.7rem; line-height: 1; }
 .tile-name { font-size: 0.85rem; font-weight: 700; text-align: center; word-break: break-word; }
-.tile.played { filter: grayscale(0.9); opacity: 0.45; }
+.tile.played { --tile-color: #565b78; opacity: 0.55; }
 .tile.my-vote { box-shadow: 0 0 0 3px #fff; }
 .tile.my-vote .tile-votes { background: var(--accent); }
 .tile-votes {
