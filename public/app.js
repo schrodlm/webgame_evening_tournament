@@ -3,19 +3,12 @@
 const CODE = location.pathname.split('/').pop().toUpperCase();
 const IDENTITY_KEY = 'wet:' + CODE;
 
-const GAMES = [
-  { name: 'OpenGuessr', site: 'https://openguessr.com/', hint: 'Create a party and copy the invite link.' },
-  { name: 'Code Names', site: 'https://codenames.game/', hint: 'Create room → copy the room URL from the address bar.' },
-  { name: 'WikiSpeedruns', site: 'https://wikispeedruns.com/', hint: 'Create a private lobby and copy the invite link.' },
-  { name: 'Dobyvatel', site: 'https://www.dobyvatel.cz/', hint: 'Create a quick game and copy the invite link.' },
-  { name: 'Custom…', site: '', hint: 'Any game with a shareable lobby link works.' },
-];
-
 let identity = null;
 try { identity = JSON.parse(localStorage.getItem(IDENTITY_KEY)); } catch { /* ignore */ }
 let state = null;
+let spinning = false; // a carousel animation is running; rendering is deferred until it lands
 // Host form inputs survive re-renders via this scratch object
-const draft = { game: GAMES[0].name, customGame: '', lobbyUrl: '' };
+const draft = { lobbyUrl: '' };
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
@@ -26,7 +19,7 @@ const isHost = () => !!identity?.hostToken;
 // ---------- rendering ----------
 
 function render() {
-  if (!state) return;
+  if (!state || spinning) return;
   document.title = `WET — ${state.name}`;
   $('t-name').textContent = state.name;
   $('join-box').hidden = !!identity;
@@ -43,25 +36,126 @@ function activeRound() {
   return state.rounds.find((r) => r.status === 'active') || null;
 }
 
+const pendingPool = () => state.games.filter((g) => g.status === 'pending');
+const pickedGame = () => state.games.find((g) => g.id === state.pendingPick?.gameId) || null;
+
 function renderRound() {
   const round = activeRound();
   const box = $('round-box');
-  if (!round) {
-    const played = state.rounds.length;
-    box.innerHTML = `<div class="card round idle">
-      <h2>No round in progress</h2>
-      <p>${played ? 'Waiting for the host to start the next round…' : 'Waiting for the host to start round 1…'}</p>
+  if (round) {
+    box.innerHTML = `<div class="card round live">
+      <div class="round-label">ROUND ${round.number} · LIVE</div>
+      <h2>${esc(round.game)}</h2>
+      <a class="btn join" href="${esc(round.lobbyUrl)}" target="_blank" rel="noopener">
+        ▶ JOIN LOBBY
+      </a>
+      <p class="hint">Everyone clicks, plays, then the host enters the results here.</p>
     </div>`;
     return;
   }
-  box.innerHTML = `<div class="card round live">
-    <div class="round-label">ROUND ${round.number} · LIVE</div>
-    <h2>${esc(round.game)}</h2>
-    <a class="btn join" href="${esc(round.lobbyUrl)}" target="_blank" rel="noopener">
-      ▶ JOIN LOBBY
-    </a>
-    <p class="hint">Everyone clicks, plays, then the host enters the results here.</p>
+
+  if (state.pendingPick) {
+    const g = pickedGame();
+    box.innerHTML = `<div class="card round upnext">
+      <div class="round-label">UP NEXT · ROUND ${state.rounds.length + 1}</div>
+      <div class="upnext-tile">${gameTile(g, 'mini landed')}</div>
+      <p class="hint">${isHost()
+        ? 'Create the lobby and paste the link below.'
+        : 'The host is creating the lobby — the join button will appear here.'}</p>
+    </div>`;
+    return;
+  }
+
+  const pool = pendingPool();
+  if (!pool.length) {
+    box.innerHTML = `<div class="card round idle">
+      <h2>🏁 All games played</h2>
+      <p>That was the night — the standings are final${
+        isHost() ? ' (or add another game to the pool to keep going)' : ''}.</p>
+    </div>`;
+    return;
+  }
+
+  if (state.pickMode === 'chance') {
+    const tiles = Array.from({ length: 20 }, (_, i) => pool[i % pool.length]);
+    box.innerHTML = `<div class="card round pick">
+      <div class="round-label">ROUND ${state.rounds.length + 1} · 🎰 CHANCE</div>
+      <div class="carousel"><div class="carousel-marker"></div>
+        <div class="carousel-strip">${tiles.map((g) => gameTile(g, 'mini')).join('')}</div>
+      </div>
+      <p class="hint">${isHost() ? 'Hit SPIN below when everyone is ready.' : 'Waiting for the host to spin…'}</p>
+    </div>`;
+    return;
+  }
+
+  if (state.pickMode === 'host') {
+    box.innerHTML = `<div class="card round idle">
+      <h2>Round ${state.rounds.length + 1}</h2>
+      <p>${isHost()
+        ? 'Pick the next game — click a tile in the pool below.'
+        : 'The host is picking the next game…'}</p>
+    </div>`;
+    return;
+  }
+
+  box.innerHTML = `<div class="card round idle">
+    <h2>Round ${state.rounds.length + 1}</h2>
+    <p>Players vote on the next game.</p>
   </div>`;
+}
+
+// ---------- carousel (chance mode) ----------
+
+// Deterministic PRNG: the server's seed makes every client build the same
+// strip and land on the same tile.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const SPIN_MS = 5500;
+
+function startSpin(spin) {
+  const pool = pendingPool();
+  const winner = pool.find((g) => g.id === spin.gameId);
+  if (!winner) return;
+
+  spinning = true;
+  $('host-box').hidden = true;
+  const rng = mulberry32(parseInt(spin.seed, 16) >>> 0);
+  const STRIP = 60;
+  const WIN = 52;
+  const tiles = Array.from({ length: STRIP }, () => pool[Math.floor(rng() * pool.length)]);
+  tiles[WIN] = winner;
+
+  $('round-box').innerHTML = `<div class="card round pick">
+    <div class="round-label">🎰 SPINNING…</div>
+    <div class="carousel"><div class="carousel-marker"></div>
+      <div class="carousel-strip" id="strip">${tiles.map((g) => gameTile(g, 'mini')).join('')}</div>
+    </div>
+  </div>`;
+
+  const strip = $('strip');
+  const stride = strip.children[1].offsetLeft - strip.children[0].offsetLeft;
+  const jitter = (rng() - 0.5) * 0.6 * stride;
+  const target = WIN * stride + stride / 2 + jitter
+    - strip.parentElement.getBoundingClientRect().width / 2;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    strip.style.transition = `transform ${SPIN_MS}ms cubic-bezier(0.08, 0.7, 0.1, 1)`;
+    strip.style.transform = `translateX(${-target}px)`;
+  }));
+
+  const done = () => {
+    if (!spinning) return;
+    spinning = false;
+    render();
+  };
+  strip.addEventListener('transitionend', done, { once: true });
+  setTimeout(done, SPIN_MS + 700);
 }
 
 function renderHost() {
@@ -89,36 +183,41 @@ function renderHost() {
       </form>
     </div>`;
     $('finish-form').addEventListener('submit', onFinishRound);
-  } else {
-    const selected = GAMES.find((g) => g.name === draft.game) || GAMES[0];
+  } else if (state.pendingPick) {
+    const g = pickedGame();
     box.innerHTML = `<div class="card host">
-      <h2>🎛 Host — start round ${state.rounds.length + 1}</h2>
+      <h2>🎛 Host — open the ${esc(g.name)} lobby</h2>
+      <p class="hint">
+        ${g.site ? `<a href="${esc(g.site)}" target="_blank" rel="noopener">Open ${esc(g.name)} ↗</a> — ` : ''}${esc(g.hint)}
+      </p>
       <form id="start-form">
-        <label>Game
-          <select id="game-select">
-            ${GAMES.map((g) =>
-              `<option ${g.name === draft.game ? 'selected' : ''}>${g.name}</option>`).join('')}
-          </select>
-        </label>
-        <input id="custom-game" placeholder="Game name" maxlength="48"
-               value="${esc(draft.customGame)}" ${selected.site ? 'hidden' : ''}>
-        <p class="hint">
-          ${selected.site
-            ? `<a href="${selected.site}" target="_blank" rel="noopener">Open ${esc(selected.name)} ↗</a> — ${esc(selected.hint)}`
-            : esc(selected.hint)}
-        </p>
         <label>Lobby link
           <input id="lobby-url" type="url" placeholder="Paste the lobby / invite URL here"
                  value="${esc(draft.lobbyUrl)}" required>
         </label>
         <button type="submit" class="btn primary">🚀 Start round — push to all players</button>
+        <button type="button" id="cancel-pick" class="btn ghost">Cancel this pick</button>
         <p class="error" id="start-error" hidden></p>
       </form>
     </div>`;
-    $('game-select').addEventListener('change', (e) => { draft.game = e.target.value; renderHost(); });
     $('lobby-url').addEventListener('input', (e) => { draft.lobbyUrl = e.target.value; });
-    $('custom-game').addEventListener('input', (e) => { draft.customGame = e.target.value; });
     $('start-form').addEventListener('submit', onStartRound);
+    $('cancel-pick').addEventListener('click', async () => {
+      try { await api(`/api/tournaments/${CODE}/pick/cancel`); } catch (err) { alert(err.message); }
+    });
+  } else if (state.pickMode === 'chance' && pendingPool().length) {
+    box.innerHTML = `<div class="card host">
+      <button id="spin-btn" class="btn spin">🎰 SPIN</button>
+    </div>`;
+    $('spin-btn').addEventListener('click', async () => {
+      $('spin-btn').disabled = true;
+      try { await api(`/api/tournaments/${CODE}/pick/spin`); } catch (err) {
+        alert(err.message);
+        $('spin-btn').disabled = false;
+      }
+    });
+  } else {
+    box.hidden = true;
   }
 }
 
@@ -249,10 +348,8 @@ $('join-form').addEventListener('submit', async (e) => {
 
 async function onStartRound(e) {
   e.preventDefault();
-  const game = draft.game === 'Custom…' ? draft.customGame.trim() : draft.game;
   try {
-    if (!game) throw new Error('Give the custom game a name');
-    await api(`/api/tournaments/${CODE}/rounds`, { game, lobbyUrl: draft.lobbyUrl.trim() });
+    await api(`/api/tournaments/${CODE}/rounds`, { lobbyUrl: $('lobby-url').value.trim() });
     draft.lobbyUrl = '';
   } catch (err) { showError('start-error', err); }
 }
@@ -288,6 +385,8 @@ function connect() {
       retryMs = 500;
       $('conn').hidden = true;
       render();
+    } else if (msg.type === 'spin') {
+      startSpin(msg.spin);
     }
   };
   ws.onclose = () => {

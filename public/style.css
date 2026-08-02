@@ -211,6 +211,59 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 }
 .tile-del:hover { background: rgba(0, 0, 0, 0.6); }
 
+/* ---------- carousel ---------- */
+
+.carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 14px 0;
+  margin: 12px 0;
+}
+.carousel::before, .carousel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 70px;
+  z-index: 3;
+  pointer-events: none;
+}
+.carousel::before { left: 0; background: linear-gradient(90deg, var(--card), transparent); }
+.carousel::after { right: 0; background: linear-gradient(270deg, var(--card), transparent); }
+.carousel-marker {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-2);
+  transform: translateX(-50%);
+  box-shadow: 0 0 12px var(--accent-2);
+  z-index: 2;
+}
+.carousel-strip {
+  display: flex;
+  gap: 8px;
+  padding: 0 8px;
+  will-change: transform;
+}
+.tile.mini { width: 120px; flex-shrink: 0; }
+.tile.landed { box-shadow: 0 0 0 3px var(--accent-2), 0 0 24px rgba(55, 214, 122, 0.4); }
+
+.btn.spin {
+  width: 100%;
+  font-size: 1.5rem;
+  padding: 16px;
+  background: var(--accent-2);
+  color: #06251a;
+  letter-spacing: 3px;
+}
+.upnext-tile { display: flex; justify-content: center; margin: 10px 0 6px; }
+.upnext-tile .tile { width: 170px; }
+.round.upnext { text-align: center; border-color: var(--accent-2); }
+
 .add-game { display: flex; gap: 8px; margin-top: 12px; }
 .add-game input { margin-top: 0; }
 .add-game .btn { flex-shrink: 0; padding: 8px 14px; }
