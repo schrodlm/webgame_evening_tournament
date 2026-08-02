@@ -12,6 +12,7 @@ let spinning = false; // a carousel animation is running; rendering is deferred 
 const draft = { lobbyUrl: '' };
 let addGameOpen = false; // the pool's add-game form is collapsed by default
 let fixLinkFor = null; // round id whose fix-lobby-link form is open
+let fixLinkDraft = null; // typed-but-unsaved fix-link URL, survives re-renders
 // Tap-in-order results entry; keyed to a round id so a new round starts clean.
 // taps: [{ playerId, tie }] in tap order; tie=true shares the previous placement.
 let finishTaps = { roundId: null, taps: [] };
@@ -241,7 +242,7 @@ function renderHost() {
       ${fixLinkFor === round.id ? `
       <form id="fix-link-form" class="add-game">
         <input id="fix-link-url" type="url" placeholder="${STR.lobbyLinkPlaceholder}"
-               value="${esc(round.lobbyUrl)}" required>
+               value="${esc(fixLinkDraft ?? round.lobbyUrl)}" required>
         <button type="submit" class="btn ghost">${STR.fixLinkButton}</button>
       </form>` : ''}
     </div>`;
@@ -283,10 +284,12 @@ function renderHost() {
     }
     $('fix-link-toggle').addEventListener('click', () => {
       fixLinkFor = fixLinkFor === round.id ? null : round.id;
+      fixLinkDraft = null;
       render();
       if (fixLinkFor) $('fix-link-url').focus();
     });
     if (fixLinkFor === round.id) {
+      $('fix-link-url').addEventListener('input', (e) => { fixLinkDraft = e.target.value; });
       $('fix-link-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
@@ -294,6 +297,7 @@ function renderHost() {
             lobbyUrl: $('fix-link-url').value.trim(),
           });
           fixLinkFor = null;
+          fixLinkDraft = null;
         } catch (err) { alert(err.message); }
       });
     }
