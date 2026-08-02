@@ -79,6 +79,8 @@ const STR = {
   voteHint: 'Click a game tile in the pool below{changeNote}. <b>{voted}/{total}</b> voted.',
   voteChangeNote: " - you can still change your vote",
   voteRandomButton: '🎲 Vote random for me',
+  waitingOn: 'Waiting on: {names}',
+  hostNotVoted: "You haven't voted yet - tap a tile below!",
   voteIdleHostHint: 'Open the vote below when everyone is ready.',
   voteIdlePlayerHint: 'Waiting for the host to open the vote…',
 

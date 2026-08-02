@@ -135,6 +135,8 @@ function renderRound() {
   if (state.pendingVote) {
     const voted = Object.keys(state.pendingVote.votes).length;
     const mine = identity && state.pendingVote.votes[identity.playerId];
+    const stragglers = state.players
+      .filter((p) => !state.pendingVote.votes[p.id]).map((p) => p.name);
     box.innerHTML = `<div class="card round pick">
       <div class="round-label">${fmt(STR.voteLabel, { n: state.rounds.length + 1 })}</div>
       ${lastRoundRecap()}
@@ -144,6 +146,9 @@ function renderRound() {
         voted,
         total: state.players.length,
       })}</p>
+      ${voted > 0 && stragglers.length ? `<p class="hint">${fmt(STR.waitingOn, {
+        names: esc(stragglers.slice(0, 4).join(', ')) + (stragglers.length > 4 ? ` +${stragglers.length - 4}` : ''),
+      })}</p>` : ''}
       ${identity ? `<button id="vote-random" class="btn ghost">${STR.voteRandomButton}</button>` : ''}
     </div>`;
     if (identity) {
@@ -400,6 +405,8 @@ function renderHost() {
           ${fmt(STR.closeVoteButton, { voted, total: state.players.length })}
         </button>
         <p class="hint">${STR.closeVoteHint}</p>
+        ${identity && !state.pendingVote.votes[identity.playerId]
+          ? `<p class="hint host-nudge">${STR.hostNotVoted}</p>` : ''}
       </div>`;
       $('close-vote').addEventListener('click', async () => {
         try { await api(`/api/tournaments/${CODE}/pick/vote/close`); } catch (err) { alert(err.message); }
