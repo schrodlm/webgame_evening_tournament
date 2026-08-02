@@ -39,6 +39,7 @@ const STR = {
   tournamentTitle: 'WET - {name}',
   copyInviteButton: '🔗 Copy invite link',
   copiedButton: "Copied!",
+  copyFallbackPrompt: 'Copy the invite link:',
   joinHeading: 'Join this tournament',
   joinButton: 'Join',
   standingsHeading: '🥇 Standings',

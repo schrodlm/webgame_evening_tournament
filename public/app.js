@@ -566,9 +566,20 @@ async function onFinishRound(e) {
 }
 
 $('copy-invite').addEventListener('click', async () => {
-  await navigator.clipboard.writeText(location.origin + '/t/' + CODE);
-  $('copy-invite').textContent = STR.copiedButton;
-  setTimeout(() => { $('copy-invite').textContent = STR.copyInviteButton; }, 1500);
+  const url = location.origin + '/t/' + CODE;
+  try {
+    // On phones the native share sheet drops the link straight into the group chat
+    if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+      await navigator.share({ url });
+      return;
+    }
+    await navigator.clipboard.writeText(url); // undefined on http:// - caught below
+    $('copy-invite').textContent = STR.copiedButton;
+    setTimeout(() => { $('copy-invite').textContent = STR.copyInviteButton; }, 1500);
+  } catch (err) {
+    if (err?.name === 'AbortError') return; // share sheet dismissed - not a failure
+    prompt(STR.copyFallbackPrompt, url); // last resort: let the host copy by hand
+  }
 });
 
 // ---------- live updates ----------
