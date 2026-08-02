@@ -12,6 +12,11 @@ let spinning = false; // a carousel animation is running; rendering is deferred 
 const draft = { lobbyUrl: '' };
 let addGameOpen = false; // the pool's add-game form is collapsed by default
 let fixLinkFor = null; // round id whose fix-lobby-link form is open
+// Tap-in-order results entry; keyed to a round id so a new round starts clean.
+// taps: [{ playerId, tie }] in tap order; tie=true shares the previous placement.
+let finishTaps = { roundId: null, taps: [] };
+let finishSubmitting = false; // in-flight POST guard
+let justPlaced = null; // playerId whose badge pops this render only
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
@@ -183,6 +188,16 @@ function startSpin(spin) {
   setTimeout(done, SPIN_MS + 700);
 }
 
+// Competition ranking (1,2,2,4): a tie shares the previous placement but still
+// consumes a slot, so the next non-tie lands on its 1-based position.
+function tapPlaces(taps) {
+  const places = [];
+  for (let i = 0; i < taps.length; i++) {
+    places[i] = i === 0 ? 1 : taps[i].tie ? places[i - 1] : i + 1;
+  }
+  return places;
+}
+
 function renderHost() {
   const box = $('host-box');
   if (!isHost()) { box.hidden = true; return; }
@@ -190,21 +205,36 @@ function renderHost() {
 
   const round = activeRound();
   if (round) {
+    if (finishTaps.roundId !== round.id) finishTaps = { roundId: round.id, taps: [] };
+    // Defensive: drop taps for players missing from state, keep the head untied
+    finishTaps.taps = finishTaps.taps.filter((t) => state.players.some((p) => p.id === t.playerId));
+    if (finishTaps.taps.length) finishTaps.taps[0].tie = false;
+
+    const places = tapPlaces(finishTaps.taps);
+    const at = new Map(finishTaps.taps.map((t, i) => [t.playerId, i]));
+    const medals = ['🥇', '🥈', '🥉'];
     box.innerHTML = `<div class="card host">
       <h2>${fmt(STR.finishHeading, { n: round.number })}</h2>
       <p class="hint">${fmt(STR.finishHint, { total: state.players.length })}</p>
       <form id="finish-form">
-        ${state.players.map((p) => `
-          <label class="placement-row">
-            <span>${esc(p.name)}</span>
-            <select name="${p.id}">
-              <option value="">${STR.satOutOption}</option>
-              ${state.players.map((_, i) => `<option value="${i + 1}">${
-                fmt(STR.placeOption, { ordinal: `${i + 1}${['st', 'nd', 'rd'][i] || 'th'}` })
-              }</option>`).join('')}
-            </select>
-          </label>`).join('')}
-        <button type="submit" class="btn primary">${STR.submitResultsButton}</button>
+        <div class="chips">
+          ${state.players.map((p) => {
+            const i = at.get(p.id);
+            const placed = i !== undefined;
+            const badge = placed ? (medals[places[i] - 1] || `${places[i]}.`) : '';
+            return `<div class="chip ${placed ? 'placed' : ''}" data-tap="${p.id}">
+              ${placed ? `<span class="chip-place ${p.id === justPlaced ? 'pop' : ''}">${badge}</span>` : ''}
+              <span class="chip-name">${esc(p.name)}</span>
+              ${placed && i > 0 ? `<button type="button" class="chip-tie ${finishTaps.taps[i].tie ? 'on' : ''}"
+                data-tie="${p.id}" title="${STR.tieToggleTitle}">${STR.tieMark}</button>` : ''}
+            </div>`;
+          }).join('')}
+        </div>
+        ${finishTaps.taps.length
+          ? `<button type="button" id="clear-taps" class="btn ghost small">${STR.clearTapsButton}</button>` : ''}
+        <button type="submit" class="btn primary" ${finishSubmitting ? 'disabled' : ''}>
+          ${finishSubmitting ? STR.submittingButton : STR.submitResultsButton}
+        </button>
         <p class="error" id="finish-error" hidden></p>
       </form>
       <button type="button" id="fix-link-toggle" class="btn ghost small">${STR.fixLinkToggle}</button>
@@ -216,11 +246,38 @@ function renderHost() {
       </form>` : ''}
     </div>`;
     $('finish-form').addEventListener('submit', onFinishRound);
-    // Sat-out selects render muted so the actual placements stand out
-    for (const sel of $('finish-form').querySelectorAll('select')) {
-      const sync = () => sel.classList.toggle('unset', !sel.value);
-      sel.addEventListener('change', sync);
-      sync();
+    for (const chip of box.querySelectorAll('[data-tap]')) {
+      chip.addEventListener('click', () => {
+        if (finishSubmitting) return;
+        const id = chip.dataset.tap;
+        const i = finishTaps.taps.findIndex((t) => t.playerId === id);
+        if (i >= 0) {
+          const wasHead = !finishTaps.taps[i].tie;
+          finishTaps.taps.splice(i, 1);
+          // Removing a tie-group head: promote the next member so the group
+          // does not silently merge into the one above
+          if (wasHead && finishTaps.taps[i]?.tie) finishTaps.taps[i].tie = false;
+        } else {
+          finishTaps.taps.push({ playerId: id, tie: false });
+          justPlaced = id;
+        }
+        render();
+        justPlaced = null;
+      });
+    }
+    for (const btn of box.querySelectorAll('[data-tie]')) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const t = finishTaps.taps.find((x) => x.playerId === btn.dataset.tie);
+        t.tie = !t.tie;
+        render();
+      });
+    }
+    if (finishTaps.taps.length) {
+      $('clear-taps').addEventListener('click', () => {
+        finishTaps.taps = [];
+        render();
+      });
     }
     $('fix-link-toggle').addEventListener('click', () => {
       fixLinkFor = fixLinkFor === round.id ? null : round.id;
@@ -479,13 +536,23 @@ async function onStartRound(e) {
 async function onFinishRound(e) {
   e.preventDefault();
   const round = activeRound();
-  const placements = [...new FormData(e.target).entries()]
-    .filter(([, v]) => v !== '')
-    .map(([playerId, v]) => ({ playerId, placement: Number(v) }));
+  if (!round || round.id !== finishTaps.roundId || finishSubmitting) return;
+  const places = tapPlaces(finishTaps.taps);
+  const placements = finishTaps.taps.map((t, i) => ({ playerId: t.playerId, placement: places[i] }));
+  if (!placements.length) return showError('finish-error', new Error(STR.noPlacementsError));
+
+  finishSubmitting = true;
+  render();
   try {
-    if (!placements.length) throw new Error(STR.noPlacementsError);
     await api(`/api/tournaments/${CODE}/rounds/${round.id}/finish`, { placements });
-  } catch (err) { showError('finish-error', err); }
+    finishTaps = { roundId: null, taps: [] };
+    finishSubmitting = false;
+    // no render: the server broadcast repaints into the next-round view
+  } catch (err) {
+    finishSubmitting = false;
+    render(); // re-enable the submit button, then surface the error on the fresh node
+    showError('finish-error', err);
+  }
 }
 
 $('copy-invite').addEventListener('click', async () => {

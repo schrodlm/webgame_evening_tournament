@@ -129,15 +129,40 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .round-label { color: var(--accent-2); font-weight: 700; letter-spacing: 2px; font-size: 0.8rem; }
 .round.idle { text-align: center; color: var(--muted); }
 
-.placement-row {
+/* ---------- tap-in-order results entry ---------- */
+
+.chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.chip {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--text);
+  gap: 8px;
+  background: var(--card-2);
+  border: 1px solid #343c66;
+  border-radius: 999px;
+  padding: 10px 16px;
+  min-height: 44px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
 }
-.placement-row select { width: 180px; margin-top: 0; }
-.placement-row select.unset { color: var(--muted); font-style: italic; }
+.chip:active { transform: scale(0.96); }
+.chip.placed { border-color: var(--accent-2); box-shadow: 0 0 10px rgba(55, 214, 122, 0.25); }
+.chip-place { display: inline-block; font-size: 1.05rem; }
+.chip-place.pop { animation: chip-pop 0.18s ease-out; }
+@keyframes chip-pop { from { transform: scale(0.4); opacity: 0; } }
+.chip-tie {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #343c66;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.chip-tie.on { background: var(--accent); color: #fff; border-color: transparent; }
 
 .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 .columns .card { margin: 0; }

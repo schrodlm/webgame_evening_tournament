@@ -71,10 +71,12 @@ const STR = {
 
   // host controls
   finishHeading: "🎛 Host - finish round {n}",
-  finishHint: 'Enter placements when the game ends. Points: 1st of {total} players gets {total}, last gets 1. Leave “sat out” for anyone who didn’t play.',
-  satOutOption: "Sat out 💤",
-  placeOption: '{ordinal} place',
+  finishHint: 'Tap players in the order they finished - first tap is 1st place, tap again to remove. Untapped players sat out 💤. Points: 1st of {total} gets {total}, last gets 1.',
   submitResultsButton: 'Submit results',
+  submittingButton: 'Submitting…',
+  tieMark: '=',
+  tieToggleTitle: 'Tied with the player placed before them',
+  clearTapsButton: '↺ Start over',
   fixLinkToggle: '🔧 Wrong lobby link?',
   fixLinkButton: 'Update link',
   noPlacementsError: 'Enter at least one placement',
