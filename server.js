@@ -419,7 +419,7 @@ app.post('/api/tournaments/:code/pick/vote/close', (req, res) => {
 app.post('/api/tournaments/:code/rounds', (req, res) => {
   const t = requireHost(req, res);
   if (!t) return;
-  const { game, lobbyUrl } = req.body || {};
+  const { lobbyUrl } = req.body || {};
   if (!lobbyUrl?.trim()) {
     return res.status(400).json({ error: 'lobbyUrl is required' });
   }
@@ -429,27 +429,17 @@ app.post('/api/tournaments/:code/rounds', (req, res) => {
     return res.status(400).json({ error: 'lobbyUrl must be a valid URL' });
   }
   if (activeRound(t)) return res.status(409).json({ error: 'Finish the current round first' });
+  if (!t.pendingPick) return res.status(409).json({ error: 'Pick the next game first' });
 
-  let gameName;
-  let gameId = null;
-  if (t.pendingPick) {
-    const picked = t.games.find((g) => g.id === t.pendingPick.gameId);
-    gameName = picked.name;
-    gameId = picked.id;
-    picked.status = 'played';
-    t.pendingPick = null;
-  } else if (game?.trim()) {
-    // Legacy free-text path, kept until the UI runs fully on the pick flow
-    gameName = game.trim();
-  } else {
-    return res.status(409).json({ error: 'Pick the next game first' });
-  }
+  const picked = t.games.find((g) => g.id === t.pendingPick.gameId);
+  picked.status = 'played';
+  t.pendingPick = null;
 
   const round = {
     id: makeId(),
     number: t.rounds.length + 1,
-    game: gameName,
-    gameId,
+    game: picked.name,
+    gameId: picked.id,
     lobbyUrl: lobbyUrl.trim(),
     status: 'active',
     startedAt: now(),
