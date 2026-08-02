@@ -137,6 +137,7 @@ label.radio input, label.preset input { width: auto; margin: 0; }
   color: var(--text);
 }
 .placement-row select { width: 180px; margin-top: 0; }
+.placement-row select.unset { color: var(--muted); font-style: italic; }
 
 .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 .columns .card { margin: 0; }

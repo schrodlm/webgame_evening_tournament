@@ -216,6 +216,12 @@ function renderHost() {
       </form>` : ''}
     </div>`;
     $('finish-form').addEventListener('submit', onFinishRound);
+    // Sat-out selects render muted so the actual placements stand out
+    for (const sel of $('finish-form').querySelectorAll('select')) {
+      const sync = () => sel.classList.toggle('unset', !sel.value);
+      sel.addEventListener('change', sync);
+      sync();
+    }
     $('fix-link-toggle').addEventListener('click', () => {
       fixLinkFor = fixLinkFor === round.id ? null : round.id;
       render();

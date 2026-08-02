@@ -72,7 +72,7 @@ const STR = {
   // host controls
   finishHeading: "🎛 Host - finish round {n}",
   finishHint: 'Enter placements when the game ends. Points: 1st of {total} players gets {total}, last gets 1. Leave “sat out” for anyone who didn’t play.',
-  satOutOption: "- sat out -",
+  satOutOption: "Sat out 💤",
   placeOption: '{ordinal} place',
   submitResultsButton: 'Submit results',
   fixLinkToggle: '🔧 Wrong lobby link?',
