@@ -232,6 +232,55 @@ app.post('/api/tournaments/:code/join', (req, res) => {
   res.json({ playerId: player.id, playerToken: player.token });
 });
 
+app.post('/api/tournaments/:code/games', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  let entry;
+  try {
+    entry = poolEntry(req.body || {});
+  } catch (e) {
+    if (e.status !== 400) throw e;
+    return res.status(400).json({ error: e.message });
+  }
+  if (t.games.some((g) => g.name.toLowerCase() === entry.name.toLowerCase())) {
+    return res.status(409).json({ error: 'That game is already in the pool' });
+  }
+  t.games.push(entry);
+  persist();
+  broadcast(t.code);
+  res.json({ id: entry.id });
+});
+
+app.delete('/api/tournaments/:code/games/:gameId', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  const game = t.games.find((g) => g.id === req.params.gameId);
+  if (!game) return res.status(404).json({ error: 'Game not found' });
+  if (game.status !== 'pending') return res.status(409).json({ error: 'Game was already played' });
+  if (t.pendingPick?.gameId === game.id) {
+    return res.status(409).json({ error: 'That game is picked as up next' });
+  }
+  t.games = t.games.filter((g) => g.id !== game.id);
+  persist();
+  broadcast(t.code);
+  res.json({ ok: true });
+});
+
+app.post('/api/tournaments/:code/pick-mode', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  const { pickMode } = req.body || {};
+  if (!PICK_MODES.includes(pickMode)) {
+    return res.status(400).json({ error: `pickMode must be one of: ${PICK_MODES.join(', ')}` });
+  }
+  if (t.pendingPick) return res.status(409).json({ error: 'A game is already picked as up next' });
+  if (t.pendingVote) return res.status(409).json({ error: 'Close the running vote first' });
+  t.pickMode = pickMode;
+  persist();
+  broadcast(t.code);
+  res.json({ ok: true });
+});
+
 app.post('/api/tournaments/:code/rounds', (req, res) => {
   const t = requireHost(req, res);
   if (!t) return;
