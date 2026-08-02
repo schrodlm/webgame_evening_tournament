@@ -98,10 +98,34 @@ function renderRound() {
     return;
   }
 
+  if (state.pendingVote) {
+    const voted = Object.keys(state.pendingVote.votes).length;
+    const mine = identity && state.pendingVote.votes[identity.playerId];
+    box.innerHTML = `<div class="card round pick">
+      <div class="round-label">ROUND ${state.rounds.length + 1} · 🗳 VOTE</div>
+      <h2>Vote for the next game</h2>
+      <p class="hint">Click a game tile in the pool below${mine ? ' — you can still change your vote' : ''}.
+        <b>${voted}/${state.players.length}</b> voted.</p>
+      ${identity ? '<button id="vote-random" class="btn ghost">🎲 Vote random for me</button>' : ''}
+    </div>`;
+    if (identity) {
+      $('vote-random').addEventListener('click', () => {
+        const pool = pendingPool();
+        castVote(pool[Math.floor(Math.random() * pool.length)].id);
+      });
+    }
+    return;
+  }
+
   box.innerHTML = `<div class="card round idle">
     <h2>Round ${state.rounds.length + 1}</h2>
-    <p>Players vote on the next game.</p>
+    <p>${isHost() ? 'Open the vote below when everyone is ready.'
+      : 'Waiting for the host to open the vote…'}</p>
   </div>`;
+}
+
+async function castVote(gameId) {
+  try { await api(`/api/tournaments/${CODE}/pick/vote`, { gameId }); } catch (err) { alert(err.message); }
 }
 
 // ---------- carousel (chance mode) ----------
@@ -216,6 +240,26 @@ function renderHost() {
         $('spin-btn').disabled = false;
       }
     });
+  } else if (state.pickMode === 'vote' && pendingPool().length) {
+    if (state.pendingVote) {
+      const voted = Object.keys(state.pendingVote.votes).length;
+      box.innerHTML = `<div class="card host">
+        <button id="close-vote" class="btn primary" ${voted ? '' : 'disabled'}>
+          Close vote now (${voted}/${state.players.length} voted)
+        </button>
+        <p class="hint">The vote closes itself once everyone voted. Majority wins, ties go to chance.</p>
+      </div>`;
+      $('close-vote').addEventListener('click', async () => {
+        try { await api(`/api/tournaments/${CODE}/pick/vote/close`); } catch (err) { alert(err.message); }
+      });
+    } else {
+      box.innerHTML = `<div class="card host">
+        <button id="open-vote" class="btn primary">🗳 Open the vote</button>
+      </div>`;
+      $('open-vote').addEventListener('click', async () => {
+        try { await api(`/api/tournaments/${CODE}/pick/vote/open`); } catch (err) { alert(err.message); }
+      });
+    }
   } else {
     box.hidden = true;
   }
@@ -237,10 +281,24 @@ function renderPool() {
   const removable = isHost() && !activeRound();
   const hostPicking = isHost() && state.pickMode === 'host'
     && !state.pendingPick && !activeRound();
+  const voting = !!state.pendingVote && !!identity;
+  const tallies = {};
+  if (state.pendingVote) {
+    for (const gid of Object.values(state.pendingVote.votes)) {
+      tallies[gid] = (tallies[gid] || 0) + 1;
+    }
+  }
+  const myVote = state.pendingVote && identity ? state.pendingVote.votes[identity.playerId] : null;
+
   $('pool').innerHTML = state.games.map((g) => gameTile(
-    g, hostPicking && g.status === 'pending' ? 'clickable' : '',
-    removable && g.status === 'pending' && state.pendingPick?.gameId !== g.id
-      ? `<button class="tile-del" data-del="${g.id}" title="Remove from pool">✕</button>` : ''
+    g,
+    [
+      (hostPicking || voting) && g.status === 'pending' ? 'clickable' : '',
+      myVote === g.id ? 'my-vote' : '',
+    ].join(' '),
+    (tallies[g.id] ? `<span class="tile-votes">🗳 ${tallies[g.id]}</span>` : '')
+    + (removable && g.status === 'pending' && state.pendingPick?.gameId !== g.id
+      ? `<button class="tile-del" data-del="${g.id}" title="Remove from pool">✕</button>` : '')
   )).join('') || '<p class="hint">The pool is empty — add a game below.</p>';
 
   for (const btn of $('pool').querySelectorAll('[data-del]')) {
@@ -252,9 +310,10 @@ function renderPool() {
     });
   }
 
-  if (hostPicking) {
+  if (hostPicking || voting) {
     for (const tile of $('pool').querySelectorAll('.tile.clickable')) {
       tile.addEventListener('click', async () => {
+        if (voting) return castVote(tile.dataset.id);
         try {
           await api(`/api/tournaments/${CODE}/pick/choose`, { gameId: tile.dataset.id });
         } catch (err) { alert(err.message); }
@@ -332,6 +391,7 @@ async function api(path, body, opts = {}) {
     headers: {
       'Content-Type': 'application/json',
       ...(isHost() ? { 'X-Host-Token': identity.hostToken } : {}),
+      ...(identity?.playerToken ? { 'X-Player-Token': identity.playerToken } : {}),
     },
     body: JSON.stringify(body),
     ...opts,
