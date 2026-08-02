@@ -33,6 +33,7 @@ function render() {
 
   renderRound();
   renderHost();
+  renderPool();
   renderStandings();
   renderPlayers();
   renderHistory();
@@ -119,6 +120,70 @@ function renderHost() {
     $('custom-game').addEventListener('input', (e) => { draft.customGame = e.target.value; });
     $('start-form').addEventListener('submit', onStartRound);
   }
+}
+
+const PICK_MODE_LABELS = { chance: '🎰 Chance', host: '🎛 Host picks', vote: '🗳 Players vote' };
+
+function gameTile(g, extraClass = '', inner = '') {
+  return `<div class="tile ${extraClass} ${g.status === 'played' ? 'played' : ''}"
+    data-id="${g.id}" style="--tile-color:${g.color}">
+    <span class="tile-emoji">${g.emoji}</span>
+    <span class="tile-name">${esc(g.name)}</span>
+    ${g.status === 'played' ? '<span class="tile-check">✓</span>' : ''}
+    ${inner}
+  </div>`;
+}
+
+function renderPool() {
+  const removable = isHost() && !activeRound();
+  $('pool').innerHTML = state.games.map((g) => gameTile(
+    g, '',
+    removable && g.status === 'pending' && state.pendingPick?.gameId !== g.id
+      ? `<button class="tile-del" data-del="${g.id}" title="Remove from pool">✕</button>` : ''
+  )).join('') || '<p class="hint">The pool is empty — add a game below.</p>';
+
+  for (const btn of $('pool').querySelectorAll('[data-del]')) {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await api(`/api/tournaments/${CODE}/games/${btn.dataset.del}`, null, { method: 'DELETE' });
+      } catch (err) { alert(err.message); }
+    });
+  }
+
+  if (!isHost()) {
+    $('pool-controls').innerHTML =
+      `<span class="badge">${PICK_MODE_LABELS[state.pickMode] || state.pickMode}</span>`;
+    $('pool-manage').innerHTML = '';
+    return;
+  }
+
+  $('pool-controls').innerHTML = `
+    <select id="mode-select" title="How the next game is picked">
+      ${Object.entries(PICK_MODE_LABELS).map(([v, l]) =>
+        `<option value="${v}" ${v === state.pickMode ? 'selected' : ''}>${l}</option>`).join('')}
+    </select>`;
+  $('mode-select').addEventListener('change', async (e) => {
+    try {
+      await api(`/api/tournaments/${CODE}/pick-mode`, { pickMode: e.target.value });
+    } catch (err) { alert(err.message); render(); }
+  });
+
+  $('pool-manage').innerHTML = `
+    <form id="add-game-form" class="add-game">
+      <input id="add-name" placeholder="Add a game (e.g. Skribbl)" maxlength="48" required>
+      <input id="add-site" type="url" placeholder="Site (optional)">
+      <button type="submit" class="btn ghost">＋ Add</button>
+    </form>`;
+  $('add-game-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await api(`/api/tournaments/${CODE}/games`, {
+        name: $('add-name').value.trim(),
+        site: $('add-site').value.trim(),
+      });
+    } catch (err) { alert(err.message); }
+  });
 }
 
 function renderStandings() {

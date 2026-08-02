@@ -155,6 +155,66 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 }
 .badge.you { color: var(--accent-2); }
 
+/* ---------- game tiles & pool ---------- */
+
+.pool-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.pool-head h2 { margin: 0; }
+.pool-head select { width: auto; margin: 0; padding: 6px 10px; font-size: 0.85rem; }
+
+.pool {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tile {
+  position: relative;
+  aspect-ratio: 5 / 3;
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--tile-color) 90%, white) 0%,
+      var(--tile-color) 55%, color-mix(in srgb, var(--tile-color) 55%, black) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  user-select: none;
+}
+.tile-emoji { font-size: 1.7rem; line-height: 1; }
+.tile-name { font-size: 0.85rem; font-weight: 700; text-align: center; word-break: break-word; }
+.tile.played { filter: grayscale(0.9); opacity: 0.45; }
+.tile-check {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  font-weight: 900;
+  color: var(--accent-2);
+  text-shadow: none;
+}
+.tile-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  cursor: pointer;
+  padding: 2px 7px;
+  font-size: 0.8rem;
+}
+.tile-del:hover { background: rgba(0, 0, 0, 0.6); }
+
+.add-game { display: flex; gap: 8px; margin-top: 12px; }
+.add-game input { margin-top: 0; }
+.add-game .btn { flex-shrink: 0; padding: 8px 14px; }
+
 .conn {
   position: fixed;
   bottom: 12px;
