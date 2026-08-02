@@ -98,6 +98,14 @@ module.exports = [
     color: '#9c36b5',
   },
   {
+    key: 'wikirace',
+    name: 'WikiRace',
+    site: 'https://www.wikirace.app/',
+    hint: 'Create a lobby and share the lobby code or link.',
+    emoji: '🏃',
+    color: '#5c940d',
+  },
+  {
     key: 'typeracer',
     name: 'TypeRacer',
     site: 'https://play.typeracer.com/',
