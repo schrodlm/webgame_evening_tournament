@@ -30,6 +30,7 @@ const STR = {
   randomPoolNote: "The standard games, shuffled - no custom games. Tap 🎲 again to pick yourself.",
   customNamePlaceholder: 'Game name',
   customSitePlaceholder: 'Game site (optional)',
+  customNoLinkLabel: "this game doesn't have a lobby link",
   removeCustomTitle: 'Remove',
   createButton: 'Create & get invite link',
   needOneGameError: 'Pick at least one game for the night',

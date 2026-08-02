@@ -104,9 +104,13 @@
       const row = document.createElement('div');
       row.className = 'custom-row';
       row.innerHTML = `
-        <input class="c-name" data-str-placeholder="customNamePlaceholder" maxlength="48">
-        <input class="c-site" type="url" data-str-placeholder="customSitePlaceholder">
-        <button type="button" class="btn ghost c-del" data-str-title="removeCustomTitle">✕</button>`;
+        <div class="custom-inputs">
+          <input class="c-name" data-str-placeholder="customNamePlaceholder" maxlength="48">
+          <input class="c-site" type="url" data-str-placeholder="customSitePlaceholder">
+          <button type="button" class="btn ghost c-del" data-str-title="removeCustomTitle">✕</button>
+        </div>
+        <label class="nolink"><input type="checkbox" class="c-nolink">
+          <span data-str="customNoLinkLabel"></span></label>`;
       row.querySelector('.c-del').addEventListener('click', () => row.remove());
       applyStrings(row);
       $('custom-list').appendChild(row);
@@ -140,7 +144,13 @@
           .map((el) => ({ preset: el.value }));
         for (const row of document.querySelectorAll('.custom-row')) {
           const name = row.querySelector('.c-name').value.trim();
-          if (name) games.push({ name, site: row.querySelector('.c-site').value.trim() });
+          if (name) {
+            games.push({
+              name,
+              site: row.querySelector('.c-site').value.trim(),
+              noLink: row.querySelector('.c-nolink').checked,
+            });
+          }
         }
         if (!games.length) {
           errEl.textContent = STR.needOneGameError;

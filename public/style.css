@@ -130,8 +130,18 @@ label.radio input, label.preset input { width: auto; margin: 0; }
   letter-spacing: 1.5px;
   margin-bottom: 2px;
 }
-.custom-row { display: flex; gap: 8px; margin: 8px 0; }
+.custom-row { margin: 8px 0; }
+.custom-inputs { display: flex; gap: 8px; }
 .custom-row input { margin-top: 0; }
+label.nolink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+label.nolink input { width: auto; margin: 0; }
 .custom-row .c-del { padding: 8px 12px; flex-shrink: 0; }
 .pool-actions { display: flex; gap: 8px; margin-top: 10px; }
 .pool-actions .btn { flex: 1; padding: 8px 10px; font-size: 0.9rem; }

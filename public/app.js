@@ -518,6 +518,7 @@ function renderPool() {
     <form id="add-game-form" class="add-game">
       <input id="add-name" placeholder="${STR.addGamePlaceholder}" maxlength="48" required>
       <input id="add-site" type="url" placeholder="${STR.addSitePlaceholder}">
+      <label class="nolink"><input type="checkbox" id="add-nolink"> ${STR.customNoLinkLabel}</label>
       <button type="submit" class="btn ghost">${STR.addGameButton}</button>
     </form>` : ''}`;
   $('toggle-add-game').addEventListener('click', () => {
@@ -532,6 +533,7 @@ function renderPool() {
         await api(`/api/tournaments/${CODE}/games`, {
           name: $('add-name').value.trim(),
           site: $('add-site').value.trim(),
+          noLink: $('add-nolink').checked,
         });
         addGameOpen = false;
       } catch (err) { alert(err.message); }
