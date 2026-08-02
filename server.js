@@ -54,9 +54,12 @@ function poolEntry(spec) {
   if (site) {
     try { new URL(site); } catch { throw badRequest('Game site must be a valid URL'); }
   }
+  const noLink = spec.noLink === true;
   return {
-    id: makeId(), key: null, name, site,
-    hint: 'Create a lobby in the game and copy the invite link.',
+    id: makeId(), key: null, name, site, noLink,
+    hint: noLink
+      ? 'No lobby link needed - just gather everyone and play.'
+      : 'Create a lobby in the game and copy the invite link.',
     emoji: '🎮', color: colorFor(name), custom: true, status: 'pending',
   };
 }
@@ -431,19 +434,23 @@ app.post('/api/tournaments/:code/pick/vote/close', (req, res) => {
 app.post('/api/tournaments/:code/rounds', (req, res) => {
   const t = requireHost(req, res);
   if (!t) return;
-  const { lobbyUrl } = req.body || {};
-  if (!lobbyUrl?.trim()) {
-    return res.status(400).json({ error: 'lobbyUrl is required' });
-  }
-  try {
-    new URL(lobbyUrl);
-  } catch {
-    return res.status(400).json({ error: 'lobbyUrl must be a valid URL' });
-  }
   if (activeRound(t)) return res.status(409).json({ error: 'Finish the current round first' });
   if (!t.pendingPick) return res.status(409).json({ error: 'Pick the next game first' });
 
   const picked = t.games.find((g) => g.id === t.pendingPick.gameId);
+  // Only games explicitly marked link-free may start without a lobby link -
+  // for everything else an empty link is a host mistake, not a feature
+  const lobbyUrl = (req.body?.lobbyUrl || '').trim();
+  if (!lobbyUrl && !picked.noLink) {
+    return res.status(400).json({ error: 'lobbyUrl is required' });
+  }
+  if (lobbyUrl) {
+    try {
+      new URL(lobbyUrl);
+    } catch {
+      return res.status(400).json({ error: 'lobbyUrl must be a valid URL' });
+    }
+  }
   picked.status = 'played';
   t.pendingPick = null;
 
@@ -452,7 +459,7 @@ app.post('/api/tournaments/:code/rounds', (req, res) => {
     number: t.rounds.length + 1,
     game: picked.name,
     gameId: picked.id,
-    lobbyUrl: lobbyUrl.trim(),
+    lobbyUrl,
     status: 'active',
     startedAt: now(),
     finishedAt: null,
