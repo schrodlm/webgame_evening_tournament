@@ -283,6 +283,7 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .tile.played { --tile-color: #565b78; opacity: 0.55; }
 .tile.my-vote { box-shadow: 0 0 0 3px #fff; }
 .tile.my-vote .tile-votes { background: var(--accent); }
+.tile:has(.tile-votes) { padding-bottom: 26px; }
 .tile-votes {
   position: absolute;
   bottom: 5px;
