@@ -268,6 +268,7 @@ function renderHost() {
     for (const btn of box.querySelectorAll('[data-tie]')) {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (finishSubmitting) return;
         const t = finishTaps.taps.find((x) => x.playerId === btn.dataset.tie);
         t.tie = !t.tie;
         render();
@@ -275,6 +276,7 @@ function renderHost() {
     }
     if (finishTaps.taps.length) {
       $('clear-taps').addEventListener('click', () => {
+        if (finishSubmitting) return;
         finishTaps.taps = [];
         render();
       });
