@@ -75,6 +75,8 @@ const STR = {
   satOutOption: "- sat out -",
   placeOption: '{ordinal} place',
   submitResultsButton: 'Submit results',
+  fixLinkToggle: '🔧 Wrong lobby link?',
+  fixLinkButton: 'Update link',
   noPlacementsError: 'Enter at least one placement',
   openLobbyHeading: "🎛 Host - open the {game} lobby",
   openSiteLink: 'Open {game} ↗',

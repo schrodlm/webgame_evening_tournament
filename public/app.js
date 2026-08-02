@@ -11,6 +11,7 @@ let spinning = false; // a carousel animation is running; rendering is deferred 
 // Host form inputs survive re-renders via this scratch object
 const draft = { lobbyUrl: '' };
 let addGameOpen = false; // the pool's add-game form is collapsed by default
+let fixLinkFor = null; // round id whose fix-lobby-link form is open
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
@@ -205,8 +206,31 @@ function renderHost() {
         <button type="submit" class="btn primary">${STR.submitResultsButton}</button>
         <p class="error" id="finish-error" hidden></p>
       </form>
+      <button type="button" id="fix-link-toggle" class="btn ghost small">${STR.fixLinkToggle}</button>
+      ${fixLinkFor === round.id ? `
+      <form id="fix-link-form" class="add-game">
+        <input id="fix-link-url" type="url" placeholder="${STR.lobbyLinkPlaceholder}"
+               value="${esc(round.lobbyUrl)}" required>
+        <button type="submit" class="btn ghost">${STR.fixLinkButton}</button>
+      </form>` : ''}
     </div>`;
     $('finish-form').addEventListener('submit', onFinishRound);
+    $('fix-link-toggle').addEventListener('click', () => {
+      fixLinkFor = fixLinkFor === round.id ? null : round.id;
+      render();
+      if (fixLinkFor) $('fix-link-url').focus();
+    });
+    if (fixLinkFor === round.id) {
+      $('fix-link-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          await api(`/api/tournaments/${CODE}/rounds/${round.id}/lobby`, {
+            lobbyUrl: $('fix-link-url').value.trim(),
+          });
+          fixLinkFor = null;
+        } catch (err) { alert(err.message); }
+      });
+    }
   } else if (state.pendingPick) {
     const g = pickedGame();
     box.innerHTML = `<div class="card host">
