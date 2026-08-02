@@ -19,6 +19,30 @@
       <label>Your nickname
         <input name="hostName" placeholder="matej" maxlength="24" required>
       </label>
+
+      <fieldset>
+        <legend>How is the next game picked?</legend>
+        <label class="radio"><input type="radio" name="pickMode" value="chance" checked>
+          🎰 Chance — spin the carousel, fate decides</label>
+        <label class="radio"><input type="radio" name="pickMode" value="host">
+          🎛 Host picks — you choose every round</label>
+        <label class="radio"><input type="radio" name="pickMode" value="vote">
+          🗳 Players vote — majority wins, ties go to chance</label>
+      </fieldset>
+
+      <fieldset id="pool-fieldset">
+        <legend>Games for the night</legend>
+        <div id="preset-list" class="preset-list"></div>
+        <div id="custom-list"></div>
+        <div class="pool-actions">
+          <button type="button" id="add-custom" class="btn ghost">＋ Custom game</button>
+          <button type="button" id="random-pool" class="btn ghost">🎲 Random pool</button>
+        </div>
+        <p class="hint" id="random-note" hidden>
+          The standard games, shuffled — no custom games. Click 🎲 again to pick yourself.
+        </p>
+      </fieldset>
+
       <button type="submit" class="btn primary">Create &amp; get invite link</button>
       <p class="error" id="create-error" hidden></p>
     </form>
@@ -27,16 +51,71 @@
   </main>
 
   <script>
-    document.getElementById('create-form').addEventListener('submit', async (e) => {
+    const $ = (id) => document.getElementById(id);
+    let randomPool = false;
+
+    fetch('/api/presets').then((r) => r.json()).then((presets) => {
+      $('preset-list').innerHTML = presets.map((p) => `
+        <label class="preset">
+          <input type="checkbox" name="preset" value="${p.key}" checked>
+          <span>${p.emoji} ${p.name}</span>
+        </label>`).join('');
+    });
+
+    $('add-custom').addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'custom-row';
+      row.innerHTML = `
+        <input class="c-name" placeholder="Game name" maxlength="48">
+        <input class="c-site" type="url" placeholder="Game site (optional)">
+        <button type="button" class="btn ghost c-del" title="Remove">✕</button>`;
+      row.querySelector('.c-del').addEventListener('click', () => row.remove());
+      $('custom-list').appendChild(row);
+      row.querySelector('.c-name').focus();
+    });
+
+    $('random-pool').addEventListener('click', () => {
+      randomPool = !randomPool;
+      $('pool-fieldset').classList.toggle('randomized', randomPool);
+      $('random-note').hidden = !randomPool;
+      for (const el of $('pool-fieldset').querySelectorAll('input, #add-custom')) {
+        el.disabled = randomPool;
+      }
+    });
+
+    $('create-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
-      const errEl = document.getElementById('create-error');
+      const errEl = $('create-error');
       errEl.hidden = true;
+
+      const form = new FormData(e.target);
+      const body = {
+        name: form.get('name'),
+        hostName: form.get('hostName'),
+        pickMode: form.get('pickMode'),
+      };
+      if (randomPool) {
+        body.random = true;
+      } else {
+        const games = [...document.querySelectorAll('input[name=preset]:checked')]
+          .map((el) => ({ preset: el.value }));
+        for (const row of document.querySelectorAll('.custom-row')) {
+          const name = row.querySelector('.c-name').value.trim();
+          if (name) games.push({ name, site: row.querySelector('.c-site').value.trim() });
+        }
+        if (!games.length) {
+          errEl.textContent = 'Pick at least one game for the night';
+          errEl.hidden = false;
+          return;
+        }
+        body.games = games;
+      }
+
       try {
         const res = await fetch('/api/tournaments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          body: JSON.stringify(body),
         });
         const out = await res.json();
         if (!res.ok) throw new Error(out.error || 'Something went wrong');

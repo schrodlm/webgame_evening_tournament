@@ -82,6 +82,28 @@ input:focus, select:focus { outline: 2px solid var(--accent); border-color: tran
 
 .error { color: var(--danger); font-size: 0.9rem; }
 
+fieldset {
+  border: 1px solid #343c66;
+  border-radius: 10px;
+  margin: 16px 0;
+  padding: 12px 14px;
+}
+legend { color: var(--muted); font-size: 0.9rem; padding: 0 6px; }
+label.radio, label.preset {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  color: var(--text);
+}
+label.radio input, label.preset input { width: auto; margin: 0; }
+.custom-row { display: flex; gap: 8px; margin: 8px 0; }
+.custom-row input { margin-top: 0; }
+.custom-row .c-del { padding: 8px 12px; flex-shrink: 0; }
+.pool-actions { display: flex; gap: 8px; margin-top: 10px; }
+.pool-actions .btn { flex: 1; padding: 8px 10px; font-size: 0.9rem; }
+#pool-fieldset.randomized label.preset, #pool-fieldset.randomized .custom-row { opacity: 0.45; }
+
 .t-header {
   display: flex;
   justify-content: space-between;
