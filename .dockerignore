@@ -1,0 +1,11 @@
+node_modules
+wet.json
+wet.json.tmp
+.git
+.github
+PLAN.md
+WORDING.csv
+README.md
+Dockerfile
+fly.toml
+*.log
