@@ -467,12 +467,18 @@ function renderPool() {
 }
 
 function renderStandings() {
-  $('standings').innerHTML = state.standings.map((s, i) => `
-    <li class="${s.playerId === identity?.playerId ? 'me' : ''}">
-      <span class="rank">${rankBadge(i + 1)}</span>
+  // No medals before the first result lands - a fresh tournament is a guest
+  // list, not a leaderboard. Ties share a rank (same 1,2,2,4 scheme as results).
+  const anyFinished = state.rounds.some((r) => r.status === 'finished');
+  let rank = 0;
+  $('standings').innerHTML = state.standings.map((s, i) => {
+    if (i === 0 || s.total !== state.standings[i - 1].total) rank = i + 1;
+    return `<li class="${s.playerId === identity?.playerId ? 'me' : ''}">
+      <span class="rank">${anyFinished ? rankBadge(rank) : '·'}</span>
       <span class="name">${esc(s.name)}</span>
       <span class="pts">${fmt(STR.pointsSuffix, { n: s.total })}</span>
-    </li>`).join('');
+    </li>`;
+  }).join('');
 }
 
 function renderPlayers() {
