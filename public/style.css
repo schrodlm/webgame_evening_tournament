@@ -81,6 +81,19 @@ input:focus, select:focus { outline: 2px solid var(--accent); border-color: tran
 
 .error { color: var(--danger); font-size: 0.9rem; }
 
+/* The host's "open the game site, grab the lobby link" step - highlighted so
+   it can't be missed in the flow */
+.host-cta {
+  background: rgba(79, 140, 255, 0.14);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.host-cta a { color: var(--accent); font-weight: 800; }
+
 fieldset {
   border: 1px solid #343c66;
   border-radius: 10px;

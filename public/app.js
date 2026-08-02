@@ -210,7 +210,7 @@ function renderHost() {
     const g = pickedGame();
     box.innerHTML = `<div class="card host">
       <h2>${fmt(STR.openLobbyHeading, { game: esc(g.name) })}</h2>
-      <p class="hint">
+      <p class="host-cta">
         ${g.site ? `<a href="${esc(g.site)}" target="_blank" rel="noopener">${
           fmt(STR.openSiteLink, { game: esc(g.name) })}</a> - ` : ''}${esc(g.hint)}
       </p>
