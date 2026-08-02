@@ -110,6 +110,13 @@ label.radio, label.preset {
 }
 label.radio input, label.preset input { width: auto; margin: 0; }
 .preset-cat { margin: 12px 0; }
+.variant-cluster {
+  border: 1px dashed #343c66;
+  border-radius: 10px;
+  padding: 2px 10px;
+  margin: 6px 0;
+}
+.variant-or { color: var(--muted); font-size: 0.75rem; margin-left: 30px; }
 .cat-label {
   color: var(--muted);
   font-size: 0.72rem;

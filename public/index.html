@@ -58,9 +58,28 @@
 
     const presetRow = (p) => `
       <label class="preset">
-        <input type="checkbox" name="preset" value="${p.key}" checked>
+        <input type="checkbox" name="preset" value="${p.key}" ${p.defaultOn === false ? '' : 'checked'}>
         <span>${p.emoji} ${p.name}</span>
       </label>`;
+
+    // Variant siblings (two sites, same game) render as one dashed cluster
+    // joined by "or"; the non-preferred one starts unchecked but stays checkable.
+    const catRows = (list) => {
+      const groups = [];
+      const byVariant = new Map();
+      for (const p of list) {
+        if (!p.variantGroup) { groups.push([p]); continue; }
+        if (!byVariant.has(p.variantGroup)) {
+          byVariant.set(p.variantGroup, []);
+          groups.push(byVariant.get(p.variantGroup));
+        }
+        byVariant.get(p.variantGroup).push(p);
+      }
+      return groups.map((g) => g.length > 1
+        ? `<div class="variant-cluster">${
+            g.map(presetRow).join(`<div class="variant-or">${STR.variantOr}</div>`)}</div>`
+        : presetRow(g[0])).join('');
+    };
 
     fetch('/api/presets').then((r) => r.json()).then((presets) => {
       const CATEGORY_LABELS = {
@@ -77,7 +96,7 @@
         .map((k) => `
           <div class="preset-cat">
             <div class="cat-label">${CATEGORY_LABELS[k]}</div>
-            ${byCat.get(k).map(presetRow).join('')}
+            ${catRows(byCat.get(k))}
           </div>`).join('');
     });
 

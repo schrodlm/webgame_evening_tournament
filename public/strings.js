@@ -24,6 +24,7 @@ const STR = {
   catAction: '⚡ Action & sport',
   catStrategy: '🌾 Strategy',
   catOther: '🎮 Other',
+  variantOr: 'or',
   addCustomButton: '＋ Custom game',
   randomPoolButton: '🎲 Random pool',
   randomPoolNote: "The standard games, shuffled - no custom games. Click 🎲 again to pick yourself.",
