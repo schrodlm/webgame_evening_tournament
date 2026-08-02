@@ -36,12 +36,31 @@ npm install
 npm start          # http://localhost:3000
 ```
 
-Everyone needs to reach the server, so either run it on a VPS / free tier
-(Fly.io, Render, Railway…) or expose your laptop with a tunnel for the evening:
+Everyone needs to reach the server — for a quick test you can tunnel your laptop
+(`npx localtunnel --port 3000`), but the real deployment runs on Fly.io.
+
+## Deploying (Fly.io)
+
+One-time setup:
 
 ```bash
-npx localtunnel --port 3000   # or: cloudflared tunnel --url http://localhost:3000
+# 1. Account at https://fly.io (needs a payment card), then:
+curl -L https://fly.io/install.sh | sh
+fly auth login
+fly apps create wet-tournament          # pick another name if taken → update fly.toml
+fly volumes create wet_data --region fra --size 1 --app wet-tournament
+fly deploy --ha=false                   # first deploy, from the repo root
+
+# 2. Let GitHub Actions deploy from now on:
+fly tokens create deploy --app wet-tournament
+gh secret set FLY_API_TOKEN            # paste the token
 ```
+
+After that, deploying = publishing a GitHub release (or the manual **Run
+workflow** button in the Actions tab). The tournament data lives on the
+`wet_data` volume in `/data/wet.json` and survives deploys and restarts. The
+machine sleeps when nobody is connected and wakes on the first visit, so an
+idle month costs cents.
 
 ## Stack
 
