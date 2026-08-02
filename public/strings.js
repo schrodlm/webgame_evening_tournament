@@ -57,6 +57,7 @@ const STR = {
   roundLiveLabel: 'ROUND {n} · LIVE',
   joinLobbyButton: '▶️ JOIN LOBBY',
   roundLiveHint: 'Everyone clicks, plays, then the host enters the results here.',
+  joinFirstHint: '⬆️ Enter your nickname above first, so your results count!',
   upNextLabel: 'UP NEXT · ROUND {n}',
   upNextHostHint: 'Create the lobby and paste the link below.',
   upNextPlayerHint: "The host is creating the lobby - the join button will appear here.",

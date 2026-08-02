@@ -59,10 +59,10 @@ function renderRound() {
     box.innerHTML = `<div class="card round live">
       <div class="round-label">${fmt(STR.roundLiveLabel, { n: round.number })}</div>
       <h2>${g ? `${g.emoji} ` : ''}${esc(round.game)}</h2>
-      <a class="btn join" href="${esc(round.lobbyUrl)}" target="_blank" rel="noopener">
+      <a class="btn join ${identity ? '' : 'dimmed'}" href="${esc(round.lobbyUrl)}" target="_blank" rel="noopener">
         ${STR.joinLobbyButton}
       </a>
-      <p class="hint">${STR.roundLiveHint}</p>
+      <p class="hint">${identity ? STR.roundLiveHint : STR.joinFirstHint}</p>
     </div>`;
     return;
   }
