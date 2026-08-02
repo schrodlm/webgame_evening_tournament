@@ -215,8 +215,8 @@ function renderHost() {
             const i = at.get(p.id);
             const placed = i !== undefined;
             const badge = placed ? rankBadge(places[i]) : '';
-            return `<div class="chip ${placed ? 'placed' : ''}" data-tap="${p.id}"
-              role="button" tabindex="0" aria-pressed="${placed}">
+            return `<div class="chip ${placed ? 'placed' : ''} ${p.id === justPlaced ? 'just-placed' : ''}"
+              data-tap="${p.id}" role="button" tabindex="0" aria-pressed="${placed}">
               ${placed ? `<span class="chip-place ${p.id === justPlaced ? 'pop' : ''}">${badge}</span>` : ''}
               <span class="chip-name">${esc(p.name)}</span>
               ${placed && i > 0 ? `<button type="button" class="chip-tie ${finishTaps.taps[i].tie ? 'on' : ''}"

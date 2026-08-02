@@ -149,8 +149,17 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .chip:active { transform: scale(0.96); }
 .chip.placed { border-color: var(--accent-2); box-shadow: 0 0 10px rgba(55, 214, 122, 0.25); }
 .chip-place { display: inline-block; font-size: 1.05rem; }
-.chip-place.pop { animation: chip-pop 0.18s ease-out; }
-@keyframes chip-pop { from { transform: scale(0.4); opacity: 0; } }
+.chip-place.pop { animation: chip-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes chip-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.5); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.chip.just-placed { animation: chip-flash 0.4s ease-out; }
+@keyframes chip-flash {
+  from { box-shadow: 0 0 0 8px rgba(55, 214, 122, 0.55); }
+  to { box-shadow: 0 0 10px rgba(55, 214, 122, 0.25); }
+}
 .chip-tie {
   position: relative;
   width: 30px;
