@@ -10,6 +10,7 @@ let state = null;
 let spinning = false; // a carousel animation is running; rendering is deferred until it lands
 // Host form inputs survive re-renders via this scratch object
 const draft = { lobbyUrl: '' };
+let addGameOpen = false; // the pool's add-game form is collapsed by default
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
@@ -344,20 +345,30 @@ function renderPool() {
   });
 
   $('pool-manage').innerHTML = `
+    <button id="toggle-add-game" class="btn ghost small">${STR.addGameToggle}</button>
+    ${addGameOpen ? `
     <form id="add-game-form" class="add-game">
       <input id="add-name" placeholder="${STR.addGamePlaceholder}" maxlength="48" required>
       <input id="add-site" type="url" placeholder="${STR.addSitePlaceholder}">
       <button type="submit" class="btn ghost">${STR.addGameButton}</button>
-    </form>`;
-  $('add-game-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-      await api(`/api/tournaments/${CODE}/games`, {
-        name: $('add-name').value.trim(),
-        site: $('add-site').value.trim(),
-      });
-    } catch (err) { alert(err.message); }
+    </form>` : ''}`;
+  $('toggle-add-game').addEventListener('click', () => {
+    addGameOpen = !addGameOpen;
+    render();
+    if (addGameOpen) $('add-name').focus();
   });
+  if (addGameOpen) {
+    $('add-game-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api(`/api/tournaments/${CODE}/games`, {
+          name: $('add-name').value.trim(),
+          site: $('add-site').value.trim(),
+        });
+        addGameOpen = false;
+      } catch (err) { alert(err.message); }
+    });
+  }
 }
 
 function renderStandings() {

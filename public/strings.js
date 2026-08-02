@@ -91,6 +91,7 @@ const STR = {
   poolHeading: '🎮 Game pool',
   poolEmpty: "The pool is empty - add a game below.",
   modeSelectTitle: 'How the next game is picked',
+  addGameToggle: '＋ Add game',
   addGamePlaceholder: 'Add a game (e.g. Skribbl)',
   addSitePlaceholder: 'Site (optional)',
   addGameButton: '＋ Add',

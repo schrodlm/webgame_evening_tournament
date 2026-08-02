@@ -294,7 +294,8 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .upnext-tile .tile { width: 170px; }
 .round.upnext { text-align: center; border-color: var(--accent-2); }
 
-.add-game { display: flex; gap: 8px; margin-top: 12px; }
+.btn.small { padding: 6px 12px; font-size: 0.85rem; margin-top: 12px; }
+.add-game { display: flex; gap: 8px; margin-top: 10px; }
 .add-game input { margin-top: 0; }
 .add-game .btn { flex-shrink: 0; padding: 8px 14px; }
 
