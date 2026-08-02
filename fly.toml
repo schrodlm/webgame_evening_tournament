@@ -1,5 +1,5 @@
 # Fly.io config for WET.
-# App names are global on Fly — if "wet-tournament" is taken, change it here
+# App names are global on Fly - if "wet-tournament" is taken, change it here
 # and create the app under the new name.
 app = "wet-tournament"
 primary_region = "fra"
@@ -17,7 +17,7 @@ primary_region = "fra"
   internal_port = 8080
   force_https = true
   # The machine stops when nobody is connected and wakes on the first request
-  # (~1s cold start) — open WebSockets keep it running all game night, and
+  # (~1s cold start) - open WebSockets keep it running all game night, and
   # between nights it costs almost nothing.
   auto_stop_machines = "stop"
   auto_start_machines = true

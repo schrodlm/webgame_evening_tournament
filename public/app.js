@@ -1,4 +1,4 @@
-/* WET tournament page logic — vanilla JS, no build step. All user-visible
+/* WET tournament page logic - vanilla JS, no build step. All user-visible
    text comes from STR in strings.js. */
 
 const CODE = location.pathname.split('/').pop().toUpperCase();
@@ -212,7 +212,7 @@ function renderHost() {
       <h2>${fmt(STR.openLobbyHeading, { game: esc(g.name) })}</h2>
       <p class="hint">
         ${g.site ? `<a href="${esc(g.site)}" target="_blank" rel="noopener">${
-          fmt(STR.openSiteLink, { game: esc(g.name) })}</a> — ` : ''}${esc(g.hint)}
+          fmt(STR.openSiteLink, { game: esc(g.name) })}</a> - ` : ''}${esc(g.hint)}
       </p>
       <form id="start-form">
         <label>${STR.lobbyLinkLabel}

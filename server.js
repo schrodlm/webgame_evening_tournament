@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ---------- helpers ----------
 
-// Unambiguous alphabet: no 0/O, 1/I/L — codes get read out loud over voice chat
+// Unambiguous alphabet: no 0/O, 1/I/L - codes get read out loud over voice chat
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function makeCode(len = 6) {
   return Array.from(crypto.randomBytes(len))
@@ -61,7 +61,7 @@ function poolEntry(spec) {
   };
 }
 
-// `random: true` fills the pool from presets only, shuffled — custom games are
+// `random: true` fills the pool from presets only, shuffled - custom games are
 // never auto-added. No games given at all → all presets in catalog order.
 function buildPool(games, random) {
   if (random) {

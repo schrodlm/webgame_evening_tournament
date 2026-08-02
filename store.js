@@ -10,7 +10,7 @@ let data = { tournaments: {} };
 try {
   data = JSON.parse(fs.readFileSync(FILE, 'utf8'));
 } catch {
-  /* first run — start empty */
+  /* first run - start empty */
 }
 
 let timer = null;

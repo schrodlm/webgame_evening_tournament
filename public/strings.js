@@ -1,5 +1,5 @@
 // Every user-visible string in the WET frontend lives here.
-// {placeholders} are filled by fmt() at render time — keep them when rewording.
+// {placeholders} are filled by fmt() at render time - keep them when rewording.
 const STR = {
   // shared
   appName: '🏆 WET',
@@ -103,7 +103,7 @@ const STR = {
   youBadge: 'you',
   pointsSuffix: '{n} pts',
   historyLine: "<b>R{n}</b> {game} - 🏅 {winners}",
-  noWinnerDash: '—',
+  noWinnerDash: '-',
   emptyHistory: 'Nothing played yet.',
 };
 
