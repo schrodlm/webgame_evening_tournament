@@ -25,6 +25,9 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
 
 const isHost = () => !!identity?.hostToken;
 
+// One source of truth for how a rank looks, shared by standings and results entry
+const rankBadge = (rank) => ['🥇', '🥈', '🥉'][rank - 1] || `${rank}.`;
+
 // ---------- rendering ----------
 
 function render() {
@@ -213,7 +216,6 @@ function renderHost() {
 
     const places = tapPlaces(finishTaps.taps);
     const at = new Map(finishTaps.taps.map((t, i) => [t.playerId, i]));
-    const medals = ['🥇', '🥈', '🥉'];
     box.innerHTML = `<div class="card host">
       <h2>${fmt(STR.finishHeading, { n: round.number })}</h2>
       <p class="hint">${fmt(STR.finishHint, { total: state.players.length })}</p>
@@ -222,7 +224,7 @@ function renderHost() {
           ${state.players.map((p) => {
             const i = at.get(p.id);
             const placed = i !== undefined;
-            const badge = placed ? (medals[places[i] - 1] || `${places[i]}.`) : '';
+            const badge = placed ? rankBadge(places[i]) : '';
             return `<div class="chip ${placed ? 'placed' : ''}" data-tap="${p.id}"
               role="button" tabindex="0" aria-pressed="${placed}">
               ${placed ? `<span class="chip-place ${p.id === justPlaced ? 'pop' : ''}">${badge}</span>` : ''}
@@ -475,10 +477,9 @@ function renderPool() {
 }
 
 function renderStandings() {
-  const medals = ['🥇', '🥈', '🥉'];
   $('standings').innerHTML = state.standings.map((s, i) => `
     <li class="${s.playerId === identity?.playerId ? 'me' : ''}">
-      <span class="rank">${medals[i] || i + 1 + '.'}</span>
+      <span class="rank">${rankBadge(i + 1)}</span>
       <span class="name">${esc(s.name)}</span>
       <span class="pts">${fmt(STR.pointsSuffix, { n: s.total })}</span>
     </li>`).join('');
