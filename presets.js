@@ -125,6 +125,15 @@ module.exports = [
     color: '#5c940d',
   },
   {
+    key: 'tetrio',
+    category: 'action',
+    name: 'TETR.IO',
+    site: 'https://tetr.io/',
+    hint: 'Create a custom room and share the room code or link.',
+    emoji: '🧱',
+    color: '#d6336c',
+  },
+  {
     key: 'typeracer',
     category: 'action',
     name: 'TypeRacer',
