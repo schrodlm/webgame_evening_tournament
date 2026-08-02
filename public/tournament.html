@@ -44,12 +44,16 @@
         <h2 data-str="standingsHeading"></h2>
         <ol id="standings" class="standings"></ol>
       </section>
-      <section class="card">
-        <h2 data-str="playersHeading"></h2>
-        <ul id="players" class="players"></ul>
-        <h2 class="spaced" data-str="roundsHeading"></h2>
-        <ul id="history" class="history"></ul>
-      </section>
+      <div class="stack">
+        <section class="card">
+          <h2 data-str="playersHeading"></h2>
+          <ul id="players" class="players"></ul>
+        </section>
+        <section class="card">
+          <h2 data-str="roundsHeading"></h2>
+          <ul id="history" class="history"></ul>
+        </section>
+      </div>
     </div>
 
     <p id="conn" class="conn" hidden data-str="reconnecting"></p>
