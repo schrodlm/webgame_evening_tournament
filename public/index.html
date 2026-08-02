@@ -8,51 +8,53 @@
 </head>
 <body>
   <main class="landing">
-    <h1 class="logo">🏆 WET</h1>
-    <p class="tagline">Webgame Evening Tournament — one lobby for your whole game night.</p>
+    <h1 class="logo" data-str="appName"></h1>
+    <p class="tagline" data-str="tagline"></p>
 
     <form id="create-form" class="card">
-      <h2>Start a tournament night</h2>
-      <label>Tournament name
-        <input name="name" placeholder="Friday Night Showdown" maxlength="48" required>
+      <h2 data-str="createHeading"></h2>
+      <label><span data-str="tournamentNameLabel"></span>
+        <input name="name" data-str-placeholder="tournamentNamePlaceholder" maxlength="48" required>
       </label>
-      <label>Your nickname
-        <input name="hostName" placeholder="matej" maxlength="24" required>
+      <label><span data-str="nicknameLabel"></span>
+        <input name="hostName" data-str-placeholder="nicknamePlaceholder" maxlength="24" required>
       </label>
 
       <fieldset>
-        <legend>How is the next game picked?</legend>
+        <legend data-str="pickModeLegend"></legend>
         <label class="radio"><input type="radio" name="pickMode" value="chance" checked>
-          🎰 Chance — spin the carousel, fate decides</label>
+          <span data-str="pickModeChanceOption"></span></label>
         <label class="radio"><input type="radio" name="pickMode" value="host">
-          🎛 Host picks — you choose every round</label>
+          <span data-str="pickModeHostOption"></span></label>
         <label class="radio"><input type="radio" name="pickMode" value="vote">
-          🗳 Players vote — majority wins, ties go to chance</label>
+          <span data-str="pickModeVoteOption"></span></label>
       </fieldset>
 
       <fieldset id="pool-fieldset">
-        <legend>Games for the night</legend>
+        <legend data-str="gamesLegend"></legend>
         <div id="preset-list" class="preset-list"></div>
         <div id="custom-list"></div>
         <div class="pool-actions">
-          <button type="button" id="add-custom" class="btn ghost">＋ Custom game</button>
-          <button type="button" id="random-pool" class="btn ghost">🎲 Random pool</button>
+          <button type="button" id="add-custom" class="btn ghost" data-str="addCustomButton"></button>
+          <button type="button" id="random-pool" class="btn ghost" data-str="randomPoolButton"></button>
         </div>
-        <p class="hint" id="random-note" hidden>
-          The standard games, shuffled — no custom games. Click 🎲 again to pick yourself.
-        </p>
+        <p class="hint" id="random-note" hidden data-str="randomPoolNote"></p>
       </fieldset>
 
-      <button type="submit" class="btn primary">Create &amp; get invite link</button>
+      <button type="submit" class="btn primary" data-str="createButton"></button>
       <p class="error" id="create-error" hidden></p>
     </form>
 
-    <p class="hint">Joining someone else's night? Ask the host for their invite link.</p>
+    <p class="hint" data-str="joinHintLanding"></p>
   </main>
 
+  <script src="/strings.js"></script>
   <script>
     const $ = (id) => document.getElementById(id);
     let randomPool = false;
+
+    applyStrings();
+    document.title = STR.landingTitle;
 
     fetch('/api/presets').then((r) => r.json()).then((presets) => {
       $('preset-list').innerHTML = presets.map((p) => `
@@ -66,10 +68,11 @@
       const row = document.createElement('div');
       row.className = 'custom-row';
       row.innerHTML = `
-        <input class="c-name" placeholder="Game name" maxlength="48">
-        <input class="c-site" type="url" placeholder="Game site (optional)">
-        <button type="button" class="btn ghost c-del" title="Remove">✕</button>`;
+        <input class="c-name" data-str-placeholder="customNamePlaceholder" maxlength="48">
+        <input class="c-site" type="url" data-str-placeholder="customSitePlaceholder">
+        <button type="button" class="btn ghost c-del" data-str-title="removeCustomTitle">✕</button>`;
       row.querySelector('.c-del').addEventListener('click', () => row.remove());
+      applyStrings(row);
       $('custom-list').appendChild(row);
       row.querySelector('.c-name').focus();
     });
@@ -104,7 +107,7 @@
           if (name) games.push({ name, site: row.querySelector('.c-site').value.trim() });
         }
         if (!games.length) {
-          errEl.textContent = 'Pick at least one game for the night';
+          errEl.textContent = STR.needOneGameError;
           errEl.hidden = false;
           return;
         }
@@ -118,7 +121,7 @@
           body: JSON.stringify(body),
         });
         const out = await res.json();
-        if (!res.ok) throw new Error(out.error || 'Something went wrong');
+        if (!res.ok) throw new Error(out.error || STR.genericError);
         localStorage.setItem('wet:' + out.code, JSON.stringify({
           playerId: out.playerId,
           playerToken: out.playerToken,

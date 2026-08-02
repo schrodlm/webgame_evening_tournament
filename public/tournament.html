@@ -10,19 +10,19 @@
   <main class="tournament">
     <header class="t-header">
       <div>
-        <a class="logo small" href="/">🏆 WET</a>
+        <a class="logo small" href="/" data-str="appName"></a>
         <h1 id="t-name">…</h1>
       </div>
-      <button id="copy-invite" class="btn ghost">🔗 Copy invite link</button>
+      <button id="copy-invite" class="btn ghost" data-str="copyInviteButton"></button>
     </header>
 
     <section id="join-box" class="card" hidden>
-      <h2>Join this tournament</h2>
+      <h2 data-str="joinHeading"></h2>
       <form id="join-form">
-        <label>Your nickname
+        <label><span data-str="nicknameLabel"></span>
           <input name="name" maxlength="24" required autofocus>
         </label>
-        <button type="submit" class="btn primary">Join</button>
+        <button type="submit" class="btn primary" data-str="joinButton"></button>
         <p class="error" id="join-error" hidden></p>
       </form>
     </section>
@@ -32,7 +32,7 @@
 
     <section class="card" id="pool-card">
       <div class="pool-head">
-        <h2>🎮 Game pool</h2>
+        <h2 data-str="poolHeading"></h2>
         <div id="pool-controls"></div>
       </div>
       <div id="pool" class="pool"></div>
@@ -41,20 +41,21 @@
 
     <div class="columns">
       <section class="card">
-        <h2>🥇 Standings</h2>
+        <h2 data-str="standingsHeading"></h2>
         <ol id="standings" class="standings"></ol>
       </section>
       <section class="card">
-        <h2>👥 Players</h2>
+        <h2 data-str="playersHeading"></h2>
         <ul id="players" class="players"></ul>
-        <h2 class="spaced">📜 Rounds</h2>
+        <h2 class="spaced" data-str="roundsHeading"></h2>
         <ul id="history" class="history"></ul>
       </section>
     </div>
 
-    <p id="conn" class="conn" hidden>reconnecting…</p>
+    <p id="conn" class="conn" hidden data-str="reconnecting"></p>
   </main>
 
+  <script src="/strings.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
