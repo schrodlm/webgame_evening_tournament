@@ -141,6 +141,7 @@ label.radio input, label.preset input { width: auto; margin: 0; }
   margin-bottom: 8px;
 }
 .t-header h1 { margin: 4px 0 0; font-size: 1.6rem; }
+.t-header .btn { white-space: nowrap; padding: 8px 12px; font-size: 0.9rem; flex-shrink: 0; }
 
 .round.live { border-color: var(--accent-2); box-shadow: 0 0 24px rgba(55, 214, 122, 0.15); }
 .round-label { color: var(--accent-2); font-weight: 700; letter-spacing: 2px; font-size: 0.8rem; }
