@@ -264,7 +264,9 @@ function renderHost() {
       ${fixLinkFor === round.id ? `
       <form id="fix-link-form" class="add-game">
         <input id="fix-link-url" type="url" placeholder="${STR.lobbyLinkPlaceholder}"
-               value="${esc(fixLinkDraft ?? round.lobbyUrl)}" required>
+               value="${esc(fixLinkDraft ?? round.lobbyUrl)}" enterkeyhint="go" required>
+        ${navigator.clipboard?.readText
+          ? `<button type="button" id="paste-fix-link" class="btn ghost">${STR.pasteButton}</button>` : ''}
         <button type="submit" class="btn ghost">${STR.fixLinkButton}</button>
       </form>` : ''}
     </div>`;
@@ -319,6 +321,14 @@ function renderHost() {
     });
     if (fixLinkFor === round.id) {
       $('fix-link-url').addEventListener('input', (e) => { fixLinkDraft = e.target.value; });
+      $('paste-fix-link')?.addEventListener('click', async () => {
+        try {
+          const text = (await navigator.clipboard.readText()).trim();
+          if (!text) return;
+          fixLinkDraft = text;
+          $('fix-link-url').value = text;
+        } catch { /* permission denied */ }
+      });
       $('fix-link-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
@@ -340,8 +350,12 @@ function renderHost() {
       </p>
       <form id="start-form">
         <label>${STR.lobbyLinkLabel}
-          <input id="lobby-url" type="url" placeholder="${STR.lobbyLinkPlaceholder}"
-                 value="${esc(draft.lobbyUrl)}" required>
+          <div class="link-row">
+            <input id="lobby-url" type="url" placeholder="${STR.lobbyLinkPlaceholder}"
+                   value="${esc(draft.lobbyUrl)}" enterkeyhint="go" required>
+            ${navigator.clipboard?.readText
+              ? `<button type="button" id="paste-link" class="btn ghost">${STR.pasteButton}</button>` : ''}
+          </div>
         </label>
         <button type="submit" class="btn primary">${STR.startRoundButton}</button>
         <button type="button" id="cancel-pick" class="btn ghost">${STR.cancelPickButton}</button>
@@ -349,6 +363,15 @@ function renderHost() {
       </form>
     </div>`;
     $('lobby-url').addEventListener('input', (e) => { draft.lobbyUrl = e.target.value; });
+    $('paste-link')?.addEventListener('click', async () => {
+      try {
+        const text = (await navigator.clipboard.readText()).trim();
+        if (!text) return;
+        draft.lobbyUrl = text;
+        $('lobby-url').value = text;
+        $('lobby-url').focus();
+      } catch { /* permission denied - the host pastes by hand */ }
+    });
     $('start-form').addEventListener('submit', onStartRound);
     $('cancel-pick').addEventListener('click', async () => {
       try { await api(`/api/tournaments/${CODE}/pick/cancel`); } catch (err) { alert(err.message); }

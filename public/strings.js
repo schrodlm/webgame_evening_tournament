@@ -97,6 +97,7 @@ const STR = {
   openSiteLink: 'Open {game} ↗️',
   lobbyLinkLabel: 'Lobby link',
   lobbyLinkPlaceholder: 'Paste the lobby / invite URL here',
+  pasteButton: '📋 Paste',
   startRoundButton: '🚀 Start round - push to all players',
   cancelPickButton: 'Cancel this pick',
   spinButton: '🎰 SPIN',
