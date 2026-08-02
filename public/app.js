@@ -192,16 +192,6 @@ function startSpin(spin) {
   setTimeout(done, SPIN_MS + 700);
 }
 
-// Competition ranking (1,2,2,4): a tie shares the previous placement but still
-// consumes a slot, so the next non-tie lands on its 1-based position.
-function tapPlaces(taps) {
-  const places = [];
-  for (let i = 0; i < taps.length; i++) {
-    places[i] = i === 0 ? 1 : taps[i].tie ? places[i - 1] : i + 1;
-  }
-  return places;
-}
-
 function renderHost() {
   const box = $('host-box');
   if (!isHost()) { box.hidden = true; return; }
