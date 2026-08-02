@@ -545,7 +545,7 @@ function renderStandings() {
       nightOver && rank === 1 ? 'champ' : ''}">
       <span class="rank">${anyFinished ? rankBadge(rank) : '·'}</span>
       <span class="name">${esc(s.name)}</span>
-      <span class="pts">${fmt(STR.pointsSuffix, { n: s.total })}</span>
+      <span class="pts">${fmt(s.total === 1 ? STR.pointsSuffixOne : STR.pointsSuffix, { n: s.total })}</span>
     </li>`;
   }).join('');
 }
