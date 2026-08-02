@@ -61,8 +61,20 @@ function poolEntry(spec) {
   };
 }
 
+// Same game concept, different site (e.g. the two wiki racers) - keep only the
+// first of each variant group so a pool never holds the same game twice.
+function onePerVariant(presets) {
+  const seen = new Set();
+  return presets.filter((p) => {
+    if (!p.variantGroup) return true;
+    if (seen.has(p.variantGroup)) return false;
+    seen.add(p.variantGroup);
+    return true;
+  });
+}
+
 // `random: true` fills the pool from presets only, shuffled - custom games are
-// never auto-added. No games given at all → all presets in catalog order.
+// never auto-added. No games given at all → the default-on presets in catalog order.
 function buildPool(games, random) {
   if (random) {
     const deck = [...PRESETS];
@@ -70,10 +82,10 @@ function buildPool(games, random) {
       const j = crypto.randomInt(i + 1);
       [deck[i], deck[j]] = [deck[j], deck[i]];
     }
-    return deck.map((p) => poolEntry({ preset: p.key }));
+    return onePerVariant(deck).map((p) => poolEntry({ preset: p.key }));
   }
   if (!Array.isArray(games) || games.length === 0) {
-    return PRESETS.map((p) => poolEntry({ preset: p.key }));
+    return PRESETS.filter((p) => p.defaultOn !== false).map((p) => poolEntry({ preset: p.key }));
   }
   const pool = [];
   const seen = new Set();
