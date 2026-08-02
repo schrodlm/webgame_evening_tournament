@@ -235,8 +235,10 @@ function gameTile(g, extraClass = '', inner = '') {
 
 function renderPool() {
   const removable = isHost() && !activeRound();
+  const hostPicking = isHost() && state.pickMode === 'host'
+    && !state.pendingPick && !activeRound();
   $('pool').innerHTML = state.games.map((g) => gameTile(
-    g, '',
+    g, hostPicking && g.status === 'pending' ? 'clickable' : '',
     removable && g.status === 'pending' && state.pendingPick?.gameId !== g.id
       ? `<button class="tile-del" data-del="${g.id}" title="Remove from pool">✕</button>` : ''
   )).join('') || '<p class="hint">The pool is empty — add a game below.</p>';
@@ -248,6 +250,16 @@ function renderPool() {
         await api(`/api/tournaments/${CODE}/games/${btn.dataset.del}`, null, { method: 'DELETE' });
       } catch (err) { alert(err.message); }
     });
+  }
+
+  if (hostPicking) {
+    for (const tile of $('pool').querySelectorAll('.tile.clickable')) {
+      tile.addEventListener('click', async () => {
+        try {
+          await api(`/api/tournaments/${CODE}/pick/choose`, { gameId: tile.dataset.id });
+        } catch (err) { alert(err.message); }
+      });
+    }
   }
 
   if (!isHost()) {
