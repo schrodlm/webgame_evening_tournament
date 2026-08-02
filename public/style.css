@@ -179,6 +179,8 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 }
 .chip:active { transform: scale(0.96); }
 .chip.placed { border-color: var(--accent-2); box-shadow: 0 0 10px rgba(55, 214, 122, 0.25); }
+.chip.satout { opacity: 0.55; }
+.chip-zzz { font-size: 0.85rem; }
 .chip-place { display: inline-block; font-size: 1.05rem; }
 .chip-place.pop { animation: chip-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
 @keyframes chip-pop {

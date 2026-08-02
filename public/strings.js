@@ -86,6 +86,7 @@ const STR = {
   finishHeading: "🎛️ Host - finish round {n}",
   finishHint: 'Tap players in the order they finished - first tap is 1st place, tap again to remove, = marks a tie with the player before. Untapped players sat out 💤. Points: 1st of {total} gets {total}, last gets 1.',
   submitResultsButton: 'Submit results',
+  submitResultsProgress: 'Submit results ({placed}/{total} placed)',
   submittingButton: 'Submitting…',
   tieMark: '=',
   tieToggleTitle: 'Tied with the player placed before them',

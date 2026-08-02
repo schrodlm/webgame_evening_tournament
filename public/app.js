@@ -243,10 +243,13 @@ function renderHost() {
             const i = at.get(p.id);
             const placed = i !== undefined;
             const badge = placed ? rankBadge(places[i]) : '';
-            return `<div class="chip ${placed ? 'placed' : ''} ${p.id === justPlaced ? 'just-placed' : ''}"
+            const satOut = !placed && finishTaps.taps.length > 0;
+            return `<div class="chip ${placed ? 'placed' : ''} ${satOut ? 'satout' : ''} ${
+                p.id === justPlaced ? 'just-placed' : ''}"
               data-tap="${p.id}" role="button" tabindex="0" aria-pressed="${placed}">
               ${placed ? `<span class="chip-place ${p.id === justPlaced ? 'pop' : ''}">${badge}</span>` : ''}
               <span class="chip-name">${esc(p.name)}</span>
+              ${satOut ? '<span class="chip-zzz">💤</span>' : ''}
               ${placed && i > 0 ? `<button type="button" class="chip-tie ${finishTaps.taps[i].tie ? 'on' : ''}"
                 data-tie="${p.id}" title="${STR.tieToggleTitle}" aria-label="${STR.tieToggleTitle}"
                 aria-pressed="${finishTaps.taps[i].tie}">${STR.tieMark}</button>` : ''}
@@ -256,7 +259,9 @@ function renderHost() {
         ${finishTaps.taps.length
           ? `<button type="button" id="clear-taps" class="btn ghost small">${STR.clearTapsButton}</button>` : ''}
         <button type="submit" class="btn primary" ${finishSubmitting ? 'disabled' : ''}>
-          ${finishSubmitting ? STR.submittingButton : STR.submitResultsButton}
+          ${finishSubmitting ? STR.submittingButton : finishTaps.taps.length
+            ? fmt(STR.submitResultsProgress, { placed: finishTaps.taps.length, total: state.players.length })
+            : STR.submitResultsButton}
         </button>
         <p class="error" id="finish-error" hidden></p>
       </form>
