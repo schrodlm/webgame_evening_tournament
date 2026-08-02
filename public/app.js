@@ -46,9 +46,10 @@ function renderRound() {
   const round = activeRound();
   const box = $('round-box');
   if (round) {
+    const g = state.games.find((x) => x.id === round.gameId);
     box.innerHTML = `<div class="card round live">
       <div class="round-label">${fmt(STR.roundLiveLabel, { n: round.number })}</div>
-      <h2>${esc(round.game)}</h2>
+      <h2>${g ? `${g.emoji} ` : ''}${esc(round.game)}</h2>
       <a class="btn join" href="${esc(round.lobbyUrl)}" target="_blank" rel="noopener">
         ${STR.joinLobbyButton}
       </a>
