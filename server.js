@@ -25,6 +25,73 @@ const now = () => new Date().toISOString();
 
 const getTournament = (code) => data.tournaments[String(code || '').toUpperCase()] || null;
 const activeRound = (t) => t.rounds.find((r) => r.status === 'active') || null;
+const pendingGames = (t) => (t.games || []).filter((g) => g.status === 'pending');
+
+// ---------- game pool ----------
+
+const PICK_MODES = ['chance', 'host', 'vote'];
+const CUSTOM_COLORS = ['#16897a', '#b13b73', '#5a7d2a', '#8a4f2d', '#3f6bbf', '#946bd6'];
+
+function colorFor(name) {
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.codePointAt(0)) >>> 0;
+  return CUSTOM_COLORS[h % CUSTOM_COLORS.length];
+}
+
+function poolEntry(spec) {
+  if (spec.preset) {
+    const p = PRESETS.find((x) => x.key === spec.preset);
+    if (!p) throw badRequest(`Unknown preset: ${spec.preset}`);
+    return {
+      id: makeId(), key: p.key, name: p.name, site: p.site, hint: p.hint,
+      emoji: p.emoji, color: p.color, custom: false, status: 'pending',
+    };
+  }
+  const name = String(spec.name || '').trim();
+  if (!name) throw badRequest('Custom game needs a name');
+  if (name.length > 48) throw badRequest('Game name too long (max 48)');
+  const site = String(spec.site || '').trim();
+  if (site) {
+    try { new URL(site); } catch { throw badRequest('Game site must be a valid URL'); }
+  }
+  return {
+    id: makeId(), key: null, name, site,
+    hint: 'Create a lobby in the game and copy the invite link.',
+    emoji: '🎮', color: colorFor(name), custom: true, status: 'pending',
+  };
+}
+
+// `random: true` fills the pool from presets only, shuffled — custom games are
+// never auto-added. No games given at all → all presets in catalog order.
+function buildPool(games, random) {
+  if (random) {
+    const deck = [...PRESETS];
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = crypto.randomInt(i + 1);
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck.map((p) => poolEntry({ preset: p.key }));
+  }
+  if (!Array.isArray(games) || games.length === 0) {
+    return PRESETS.map((p) => poolEntry({ preset: p.key }));
+  }
+  const pool = [];
+  const seen = new Set();
+  for (const spec of games) {
+    const entry = poolEntry(spec);
+    const k = entry.name.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    pool.push(entry);
+  }
+  return pool;
+}
+
+function badRequest(message) {
+  const err = new Error(message);
+  err.status = 400;
+  return err;
+}
 
 // Public view of a tournament: everything except tokens
 function getState(code) {
@@ -40,6 +107,10 @@ function getState(code) {
     code: t.code,
     name: t.name,
     createdAt: t.createdAt,
+    pickMode: t.pickMode || 'chance',
+    games: t.games || [],
+    pendingPick: t.pendingPick || null,
+    pendingVote: t.pendingVote || null,
     players: t.players.map((p) => ({ id: p.id, name: p.name, isHost: p.isHost })),
     rounds: t.rounds,
     standings: t.players
@@ -96,9 +167,19 @@ function broadcast(code) {
 app.get('/api/presets', (_req, res) => res.json(PRESETS));
 
 app.post('/api/tournaments', (req, res) => {
-  const { name, hostName } = req.body || {};
+  const { name, hostName, pickMode, games, random } = req.body || {};
   if (!name?.trim() || !hostName?.trim()) {
     return res.status(400).json({ error: 'name and hostName are required' });
+  }
+  if (pickMode !== undefined && !PICK_MODES.includes(pickMode)) {
+    return res.status(400).json({ error: `pickMode must be one of: ${PICK_MODES.join(', ')}` });
+  }
+  let pool;
+  try {
+    pool = buildPool(games, random === true);
+  } catch (e) {
+    if (e.status !== 400) throw e;
+    return res.status(400).json({ error: e.message });
   }
 
   let code;
@@ -114,6 +195,10 @@ app.post('/api/tournaments', (req, res) => {
     name: name.trim(),
     hostToken,
     createdAt: now(),
+    pickMode: pickMode || 'chance',
+    games: pool,
+    pendingPick: null,
+    pendingVote: null,
     players: [
       { id: playerId, name: hostName.trim(), token: playerToken, isHost: true, joinedAt: now() },
     ],
