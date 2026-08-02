@@ -152,6 +152,7 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .chip-place.pop { animation: chip-pop 0.18s ease-out; }
 @keyframes chip-pop { from { transform: scale(0.4); opacity: 0; } }
 .chip-tie {
+  position: relative;
   width: 30px;
   height: 30px;
   border: 1px solid #343c66;
@@ -161,6 +162,13 @@ label.radio input, label.preset input { width: auto; margin: 0; }
   font-weight: 800;
   cursor: pointer;
   flex-shrink: 0;
+}
+/* Invisible halo: a near-miss on the tiny "=" must not un-place the player */
+.chip-tie::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
 }
 .chip-tie.on { background: var(--accent); color: #fff; border-color: transparent; }
 
