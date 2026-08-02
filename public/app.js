@@ -550,7 +550,10 @@ async function onFinishRound(e) {
     await api(`/api/tournaments/${CODE}/rounds/${round.id}/finish`, { placements });
     finishTaps = { roundId: null, taps: [] };
     finishSubmitting = false;
-    // no render: the server broadcast repaints into the next-round view
+    // The broadcast repaints into the next-round view almost instantly; this
+    // render is the fallback so a dropped websocket can't leave a stale,
+    // interactive finish form on screen disagreeing with the reset draft.
+    render();
   } catch (err) {
     finishSubmitting = false;
     render(); // re-enable the submit button, then surface the error on the fresh node
