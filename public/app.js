@@ -85,9 +85,11 @@ function renderRound() {
     box.innerHTML = `<div class="card round live">
       <div class="round-label">${fmt(STR.roundLiveLabel, { n: round.number })}</div>
       <h2>${g ? `${g.emoji} ` : ''}${esc(round.game)}</h2>
-      <a class="btn join ${identity ? '' : 'dimmed'}" href="${esc(round.lobbyUrl)}" target="_blank" rel="noopener">
-        ${STR.joinLobbyButton}
-      </a>
+      ${round.lobbyUrl
+        ? `<a class="btn join ${identity ? '' : 'dimmed'}" href="${esc(round.lobbyUrl)}" target="_blank" rel="noopener">
+            ${STR.joinLobbyButton}
+          </a>`
+        : `<p class="no-link">${STR.noLinkHint}</p>`}
       <p class="hint">${identity ? STR.roundLiveHint : STR.joinFirstHint}</p>
     </div>`;
     return;
@@ -99,7 +101,9 @@ function renderRound() {
       <div class="round-label">${fmt(STR.upNextLabel, { n: state.rounds.length + 1 })}</div>
       ${lastRoundRecap()}
       <div class="upnext-tile">${gameTile(g, 'mini landed')}</div>
-      <p class="hint">${isHost() ? STR.upNextHostHint : STR.upNextPlayerHint + WAIT_DOTS}</p>
+      <p class="hint">${isHost()
+        ? (g.noLink ? STR.upNextNoLinkHostHint : STR.upNextHostHint)
+        : (g.noLink ? STR.upNextNoLinkPlayerHint : STR.upNextPlayerHint) + WAIT_DOTS}</p>
     </div>`;
     return;
   }
@@ -279,7 +283,8 @@ function renderHost() {
         </button>
         <p class="error" id="finish-error" hidden></p>
       </form>
-      <button type="button" id="fix-link-toggle" class="btn ghost small">${STR.fixLinkToggle}</button>
+      ${state.games.find((x) => x.id === round.gameId)?.noLink ? '' : `
+      <button type="button" id="fix-link-toggle" class="btn ghost small">${STR.fixLinkToggle}</button>`}
       ${fixLinkFor === round.id ? `
       <form id="fix-link-form" class="add-game">
         <input id="fix-link-url" type="url" placeholder="${STR.lobbyLinkPlaceholder}"
@@ -332,7 +337,7 @@ function renderHost() {
         render();
       });
     }
-    $('fix-link-toggle').addEventListener('click', () => {
+    $('fix-link-toggle')?.addEventListener('click', () => {
       fixLinkFor = fixLinkFor === round.id ? null : round.id;
       fixLinkDraft = null;
       render();
@@ -362,12 +367,13 @@ function renderHost() {
   } else if (state.pendingPick) {
     const g = pickedGame();
     box.innerHTML = `<div class="card host">
-      <h2>${fmt(STR.openLobbyHeading, { game: esc(g.name) })}</h2>
+      <h2>${fmt(g.noLink ? STR.startNoLinkHeading : STR.openLobbyHeading, { game: esc(g.name) })}</h2>
       <p class="host-cta">
         ${g.site ? `<a href="${esc(g.site)}" target="_blank" rel="noopener">${
           fmt(STR.openSiteLink, { game: esc(g.name) })}</a> - ` : ''}${esc(g.hint)}
       </p>
       <form id="start-form">
+        ${g.noLink ? '' : `
         <label>${STR.lobbyLinkLabel}
           <div class="link-row">
             <input id="lobby-url" type="url" placeholder="${STR.lobbyLinkPlaceholder}"
@@ -375,13 +381,13 @@ function renderHost() {
             ${navigator.clipboard?.readText
               ? `<button type="button" id="paste-link" class="btn ghost">${STR.pasteButton}</button>` : ''}
           </div>
-        </label>
+        </label>`}
         <button type="submit" class="btn primary">${STR.startRoundButton}</button>
         <button type="button" id="cancel-pick" class="btn ghost">${STR.cancelPickButton}</button>
         <p class="error" id="start-error" hidden></p>
       </form>
     </div>`;
-    $('lobby-url').addEventListener('input', (e) => { draft.lobbyUrl = e.target.value; });
+    $('lobby-url')?.addEventListener('input', (e) => { draft.lobbyUrl = e.target.value; });
     $('paste-link')?.addEventListener('click', async () => {
       try {
         const text = (await navigator.clipboard.readText()).trim();
@@ -620,7 +626,7 @@ $('join-form').addEventListener('submit', async (e) => {
 async function onStartRound(e) {
   e.preventDefault();
   try {
-    await api(`/api/tournaments/${CODE}/rounds`, { lobbyUrl: $('lobby-url').value.trim() });
+    await api(`/api/tournaments/${CODE}/rounds`, { lobbyUrl: $('lobby-url')?.value.trim() ?? '' });
     draft.lobbyUrl = '';
   } catch (err) { showError('start-error', err); }
 }

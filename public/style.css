@@ -83,6 +83,14 @@ input:focus, select:focus { outline: 2px solid var(--accent); border-color: tran
   margin: 12px 0 8px;
 }
 .btn.join.dimmed { filter: grayscale(0.6); opacity: 0.55; }
+.no-link {
+  text-align: center;
+  font-size: 1.05rem;
+  padding: 14px;
+  margin: 12px 0 8px;
+  border: 1px dashed #343c66;
+  border-radius: 10px;
+}
 
 .error { color: var(--danger); font-size: 0.9rem; }
 
