@@ -3,6 +3,7 @@
 module.exports = [
   {
     key: 'openguessr',
+    category: 'geo',
     name: 'OpenGuessr',
     site: 'https://openguessr.com/',
     hint: 'Create a party and copy the invite link.',
@@ -11,6 +12,7 @@ module.exports = [
   },
   {
     key: 'codenames',
+    category: 'deduction',
     name: 'Code Names',
     site: 'https://codenames.game/',
     hint: 'Create room → copy the room URL from the address bar.',
@@ -19,6 +21,9 @@ module.exports = [
   },
   {
     key: 'wikispeedruns',
+    category: 'wiki',
+    variantGroup: 'wikirace',
+    defaultOn: false,
     name: 'WikiSpeedruns',
     site: 'https://wikispeedruns.com/',
     hint: 'Create a private lobby and copy the invite link.',
@@ -27,6 +32,7 @@ module.exports = [
   },
   {
     key: 'dobyvatel',
+    category: 'geo',
     name: 'Dobyvatel',
     site: 'https://www.dobyvatel.cz/',
     hint: 'Create a quick game and copy the invite link.',
@@ -35,6 +41,8 @@ module.exports = [
   },
   {
     key: 'skribbl',
+    category: 'drawing',
+    variantGroup: 'drawing',
     name: 'Skribbl',
     site: 'https://skribbl.io/',
     hint: 'Create a private room and copy the invite link.',
@@ -43,6 +51,9 @@ module.exports = [
   },
   {
     key: 'garticphone',
+    category: 'drawing',
+    variantGroup: 'drawing',
+    defaultOn: false,
     name: 'Gartic Phone',
     site: 'https://garticphone.com/',
     hint: 'Start a room and copy the invite link.',
@@ -51,6 +62,7 @@ module.exports = [
   },
   {
     key: 'bombparty',
+    category: 'action',
     name: 'BombParty',
     site: 'https://jklm.fun/',
     hint: 'Start a room and share the room link.',
@@ -59,6 +71,7 @@ module.exports = [
   },
   {
     key: 'haxball',
+    category: 'action',
     name: 'Haxball',
     site: 'https://www.haxball.com/',
     hint: 'Create a room and copy the room link.',
@@ -67,6 +80,7 @@ module.exports = [
   },
   {
     key: 'curvefever',
+    category: 'action',
     name: 'Curve Fever',
     site: 'https://curvefever.pro/',
     hint: 'Create a custom room and share the link.',
@@ -75,6 +89,7 @@ module.exports = [
   },
   {
     key: 'colonist',
+    category: 'strategy',
     name: 'Colonist',
     site: 'https://colonist.io/',
     hint: 'Create a private room and share the room link.',
@@ -83,6 +98,7 @@ module.exports = [
   },
   {
     key: 'spyfall',
+    category: 'deduction',
     name: 'Spyfall',
     site: 'https://spyfall.app/',
     hint: 'Create a game and share the join link.',
@@ -91,6 +107,7 @@ module.exports = [
   },
   {
     key: 'smashkarts',
+    category: 'action',
     name: 'Smash Karts',
     site: 'https://smashkarts.io/',
     hint: 'Create a private room and share the room link.',
@@ -99,6 +116,8 @@ module.exports = [
   },
   {
     key: 'wikirace',
+    category: 'wiki',
+    variantGroup: 'wikirace',
     name: 'WikiRace',
     site: 'https://www.wikirace.app/',
     hint: 'Create a lobby and share the lobby code or link.',
@@ -107,6 +126,7 @@ module.exports = [
   },
   {
     key: 'typeracer',
+    category: 'action',
     name: 'TypeRacer',
     site: 'https://play.typeracer.com/',
     hint: "Click 'Race your friends' and share the track link.",
