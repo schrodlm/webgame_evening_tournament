@@ -55,19 +55,25 @@ const ordinal = (n) => `${n}${['st', 'nd', 'rd'][n - 1] || 'th'}`;
 // Animated ellipsis appended to waiting hints so idle screens read as live
 const WAIT_DOTS = '<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
 
-// One-line ribbon acknowledging the last finished round on between-round cards
+// One-line ribbon acknowledging the last finished round on between-round cards.
+// The viewer appears as "You" ("You took round 1"), listed first among co-winners.
 function lastRoundRecap() {
   const finished = state.rounds.filter((r) => r.status === 'finished');
   const last = finished[finished.length - 1];
   if (!last) return '';
-  const winners = last.results.filter((x) => x.placement === 1)
-    .map((x) => state.players.find((p) => p.id === x.playerId)?.name).filter(Boolean);
   const mine = identity && last.results.find((x) => x.playerId === identity.playerId);
+  const iWon = mine?.placement === 1;
+  const winners = last.results.filter((x) => x.placement === 1)
+    .map((x) => (x.playerId === identity?.playerId
+      ? STR.youWord
+      : esc(state.players.find((p) => p.id === x.playerId)?.name || '')))
+    .filter(Boolean)
+    .sort((a, b) => (a === STR.youWord ? -1 : b === STR.youWord ? 1 : 0));
   return `<p class="recap">${fmt(STR.roundRecap, {
     n: last.number,
     game: esc(last.game),
-    winners: esc(winners.join(', ') || STR.noWinnerDash),
-    you: mine ? fmt(STR.recapYou, { place: ordinal(mine.placement) }) : '',
+    winners: winners.join(', ') || STR.noWinnerDash,
+    you: mine && !iWon ? fmt(STR.recapYou, { place: ordinal(mine.placement) }) : '',
   })}</p>`;
 }
 

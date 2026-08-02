@@ -67,6 +67,7 @@ const STR = {
   allPlayedHostExtra: ' (or add another game to the pool to keep going)',
   roundRecap: '🏅 {winners} took round {n} ({game}){you}',
   recapYou: ' · you placed {place}',
+  youWord: 'You',
   chanceLabel: 'ROUND {n} · 🎰 CHANCE',
   chanceHostHint: 'Hit SPIN below when everyone is ready.',
   chancePlayerHint: 'Waiting for the host to spin…',
