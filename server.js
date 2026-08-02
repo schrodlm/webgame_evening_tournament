@@ -527,5 +527,10 @@ app.get('/t/:code', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tournament.html'));
 });
 
+// API errors answer in JSON, not Express's default HTML stack trace
+app.use((err, _req, res, _next) => {
+  res.status(err.status || 500).json({ error: err.status ? err.message : 'Server error' });
+});
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`WET running on http://localhost:${PORT}`));
