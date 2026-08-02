@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WET — Webgame Evening Tournament</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="landing">
+    <h1 class="logo">🏆 WET</h1>
+    <p class="tagline">Webgame Evening Tournament — one lobby for your whole game night.</p>
+
+    <form id="create-form" class="card">
+      <h2>Start a tournament night</h2>
+      <label>Tournament name
+        <input name="name" placeholder="Friday Night Showdown" maxlength="48" required>
+      </label>
+      <label>Your nickname
+        <input name="hostName" placeholder="matej" maxlength="24" required>
+      </label>
+      <button type="submit" class="btn primary">Create &amp; get invite link</button>
+      <p class="error" id="create-error" hidden></p>
+    </form>
+
+    <p class="hint">Joining someone else's night? Ask the host for their invite link.</p>
+  </main>
+
+  <script>
+    document.getElementById('create-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const errEl = document.getElementById('create-error');
+      errEl.hidden = true;
+      try {
+        const res = await fetch('/api/tournaments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const out = await res.json();
+        if (!res.ok) throw new Error(out.error || 'Something went wrong');
+        localStorage.setItem('wet:' + out.code, JSON.stringify({
+          playerId: out.playerId,
+          playerToken: out.playerToken,
+          hostToken: out.hostToken,
+        }));
+        location.href = '/t/' + out.code;
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>
