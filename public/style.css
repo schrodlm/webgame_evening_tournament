@@ -145,6 +145,7 @@ label.radio input, label.preset input { width: auto; margin: 0; }
 .round.live { border-color: var(--accent-2); box-shadow: 0 0 24px rgba(55, 214, 122, 0.15); }
 .round-label { color: var(--accent-2); font-weight: 700; letter-spacing: 2px; font-size: 0.8rem; }
 .round.idle { text-align: center; color: var(--muted); }
+.recap { color: var(--muted); font-size: 0.9rem; margin: 6px 0; }
 .round.final {
   text-align: center;
   border-color: #e7c34b;

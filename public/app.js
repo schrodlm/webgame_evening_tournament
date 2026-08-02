@@ -50,6 +50,23 @@ function activeRound() {
 
 const pendingPool = () => state.games.filter((g) => g.status === 'pending');
 const pickedGame = () => state.games.find((g) => g.id === state.pendingPick?.gameId) || null;
+const ordinal = (n) => `${n}${['st', 'nd', 'rd'][n - 1] || 'th'}`;
+
+// One-line ribbon acknowledging the last finished round on between-round cards
+function lastRoundRecap() {
+  const finished = state.rounds.filter((r) => r.status === 'finished');
+  const last = finished[finished.length - 1];
+  if (!last) return '';
+  const winners = last.results.filter((x) => x.placement === 1)
+    .map((x) => state.players.find((p) => p.id === x.playerId)?.name).filter(Boolean);
+  const mine = identity && last.results.find((x) => x.playerId === identity.playerId);
+  return `<p class="recap">${fmt(STR.roundRecap, {
+    n: last.number,
+    game: esc(last.game),
+    winners: esc(winners.join(', ') || STR.noWinnerDash),
+    you: mine ? fmt(STR.recapYou, { place: ordinal(mine.placement) }) : '',
+  })}</p>`;
+}
 
 function renderRound() {
   const round = activeRound();
@@ -71,6 +88,7 @@ function renderRound() {
     const g = pickedGame();
     box.innerHTML = `<div class="card round upnext">
       <div class="round-label">${fmt(STR.upNextLabel, { n: state.rounds.length + 1 })}</div>
+      ${lastRoundRecap()}
       <div class="upnext-tile">${gameTile(g, 'mini landed')}</div>
       <p class="hint">${isHost() ? STR.upNextHostHint : STR.upNextPlayerHint}</p>
     </div>`;
@@ -96,6 +114,7 @@ function renderRound() {
     const tiles = Array.from({ length: 20 }, (_, i) => pool[i % pool.length]);
     box.innerHTML = `<div class="card round pick">
       <div class="round-label">${fmt(STR.chanceLabel, { n: state.rounds.length + 1 })}</div>
+      ${lastRoundRecap()}
       <div class="carousel"><div class="carousel-marker"></div>
         <div class="carousel-strip">${tiles.map((g) => gameTile(g, 'mini')).join('')}</div>
       </div>
@@ -107,6 +126,7 @@ function renderRound() {
   if (state.pickMode === 'host') {
     box.innerHTML = `<div class="card round idle">
       <h2>${fmt(STR.roundHeading, { n: state.rounds.length + 1 })}</h2>
+      ${lastRoundRecap()}
       <p>${isHost() ? STR.hostPickHostHint : STR.hostPickPlayerHint}</p>
     </div>`;
     return;
@@ -117,6 +137,7 @@ function renderRound() {
     const mine = identity && state.pendingVote.votes[identity.playerId];
     box.innerHTML = `<div class="card round pick">
       <div class="round-label">${fmt(STR.voteLabel, { n: state.rounds.length + 1 })}</div>
+      ${lastRoundRecap()}
       <h2>${STR.voteHeading}</h2>
       <p class="hint">${fmt(STR.voteHint, {
         changeNote: mine ? STR.voteChangeNote : '',
@@ -136,6 +157,7 @@ function renderRound() {
 
   box.innerHTML = `<div class="card round idle">
     <h2>${fmt(STR.roundHeading, { n: state.rounds.length + 1 })}</h2>
+    ${lastRoundRecap()}
     <p>${isHost() ? STR.voteIdleHostHint : STR.voteIdlePlayerHint}</p>
   </div>`;
 }
