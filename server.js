@@ -452,6 +452,26 @@ app.post('/api/tournaments/:code/rounds', (req, res) => {
   res.json({ id: round.id, number: round.number });
 });
 
+// The host pasted a wrong lobby link - let them swap it while the round runs
+app.post('/api/tournaments/:code/rounds/:roundId/lobby', (req, res) => {
+  const t = requireHost(req, res);
+  if (!t) return;
+  const round = t.rounds.find((r) => r.id === req.params.roundId);
+  if (!round) return res.status(404).json({ error: 'Round not found' });
+  if (round.status !== 'active') return res.status(409).json({ error: 'Round already finished' });
+  const { lobbyUrl } = req.body || {};
+  if (!lobbyUrl?.trim()) return res.status(400).json({ error: 'lobbyUrl is required' });
+  try {
+    new URL(lobbyUrl);
+  } catch {
+    return res.status(400).json({ error: 'lobbyUrl must be a valid URL' });
+  }
+  round.lobbyUrl = lobbyUrl.trim();
+  persist();
+  broadcast(t.code);
+  res.json({ ok: true });
+});
+
 // Scoring: with N players, 1st place gets N points, 2nd gets N-1, ... Ties share a
 // placement and its points. Players left out of the submission score 0 for the round.
 app.post('/api/tournaments/:code/rounds/:roundId/finish', (req, res) => {
